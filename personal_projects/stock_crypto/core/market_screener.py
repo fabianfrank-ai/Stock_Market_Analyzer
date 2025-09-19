@@ -2,9 +2,9 @@
 
 import pandas as pd
 import urllib.request
-from fetch_data import fetch_stock_data
-from indicators import sma, bollinger_bands, rsi, ema, macd , atr
-from verdict import generate_verdict
+from data.fetch_data import fetch_stock_data
+from core.indicators import sma, bollinger_bands, rsi, ema, macd , atr
+from core.verdict import generate_verdict
 
 
 def market_screener():

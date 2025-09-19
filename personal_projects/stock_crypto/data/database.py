@@ -25,15 +25,3 @@ def insert_stock_data(data):
     conn.commit()
     conn.close()
 
-
-# function to insert all buy prices detected(if i opt to use it)
-def insert_buy(date, ticker, data):
-    """insert data into the database"""
-
-    conn = sqlite3.connect('stock_data.db')
-    c = conn.cursor()
-    for index, row in data.iterrows():
-        c.execute("INSERT INTO buys (date, ticker) VALUES (?, ?)",
-                  (index.strftime('%Y-%m-%d'), row['ticker']))
-    conn.commit()
-    conn.close()

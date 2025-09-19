@@ -6,7 +6,7 @@
 #Note: This is a very simple approach and should not be used for real trading decisions. It is just for educational purposes.
 
 import pandas as pd
-from indicators import ema, macd
+from core.indicators import ema, macd
 
 def generate_verdict(data,short_sma,long_sma,lower_band,upper_band,rsi):
     """Generate a trading verdict based on multiple technical indicators."""
@@ -109,13 +109,13 @@ def generate_verdict(data,short_sma,long_sma,lower_band,upper_band,rsi):
      
 
     # return verdict
-    if buy_signals >= 4 and buy_signals < 8:
+    if buy_signals >= 6 and buy_signals < 11:
         return "Buy"
-    if buy_signals >=9:
+    if buy_signals >=12:
         return "Strong Buy"
-    elif sell_signals >=4 and sell_signals < 8:
+    elif sell_signals >=6 and sell_signals < 11:
         return "Sell"
-    elif sell_signals >= 9:
+    elif sell_signals >= 12:
         return "Strong Sell"
     else:
         return "Hold"
