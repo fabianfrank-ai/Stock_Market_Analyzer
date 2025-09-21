@@ -17,7 +17,7 @@ def tab_init():
     global tab1, tab2, tab3
 
     # create tabs with streamlit
-    tab1,tab2,tab3= st.tabs(["Stock Prices 📈", "Heatmap 🟩🟨🟥", "Portfolio Calculator 💹"])
+    tab1,tab2,tab3 = st.tabs(["Stock Prices 📈", "Heatmap 🟩🟨🟥", "Stock Prediction 💹"])
 
 
 
@@ -47,6 +47,7 @@ def sidebar():
     '''Create a sidebar with useful texts and information and some instructions'''
 
     # sidebar also defines some values like the indicators
+    # not much code, just text here
 
     with st.sidebar:
     
@@ -105,6 +106,11 @@ def sidebar():
             selected_indicators = st.multiselect('Select Indicators to Display', options, default=['SMA', 'Bollinger Bands', 'RSI'])
             st.write('You can select which technical indicators to display on the chart. By default, SMA, Bollinger Bands, and RSI are selected.')
         
+        with st.sidebar.expander('How does the prediction work?'):
+            st.write('The prediction uses all of the indicators of the most recent data and calculates how the price could evolve based on them')
+            st.write('Indicators are scaled and added together to form a weight which will be applied to the data')
+            st.write('Since stocks are not purely statistical, the prediction is very likely to fail, however, a broad understanding of future developments can be made')
+        
         with st.sidebar.expander('Future Improvements'):
 
             st.write('- Add more technical indicators like Volume, Stochastic Oscillator, etc.')
@@ -127,6 +133,8 @@ def sliders():
     with tab1:
         period = st.slider('Select Period', min_value=1, max_value=20, value=10, help='Select the number of years to fetch data for (1-20 years)')
         stock = st.text_input('Select Stock ticker (AMZN, MSFT, META)',  help='Select the stock symbol to fetch data for', value='AMZN')
+
+
     
     return period, stock
 
@@ -136,8 +144,11 @@ def sliders():
 
 def tab_stock_chart(stock , price_change , data , selected_indicators ,data_sma_30 , data_sma_100 , crossover_data_sma, crossover_type_sma,
                      upper_band, lower_band, ema_12, ema_26, crossover_data_ema, crossover_type_ema , macd_line, signal_line, rsi, verdict, atr):
+    
+    
     """Use retreived data from main to create plots for the data and create heatmap if necessary"""
     with tab1:
+
         fig ,(ax,ax2) = plt.subplots(2,1, figsize=(16,20), sharex=True)
         fig.tight_layout(pad=5.0)
 
@@ -322,11 +333,30 @@ def tab_heatmap():
 
 
         
-def tab_portfolio_calculator():
+def tab_portfolio_calculator(data_pred, data):
     '''Create a portfolio calculator for input given by the user'''
 
     # the idea has not been implemented yet as I'm not sure how to do it, will be worked on over the weekend
 
     with tab3:
+        fig2, ax = plt.subplots(figsize = (16,8))
+        
+        ax.set_xlabel('Date')
+        ax.set_ylabel('Price (USD)') 
+        ax.grid()
+        
+        ax.plot(data.index, data['Close'], label= "Stock price", zorder=4 )
+        ax.plot(data_pred.index, data_pred['Close'], label= "Stock price prediction for the next 100 days", color="#24FF07", linestyle = "--" )
+        
+        ax.legend()
+        
+        # take the most recent price in the prediction to indicate a potential price in the next 100 days
+        target_price = data_pred['Close'].iloc[-1]
+        target_price = round(target_price, 2) 
+        
 
-        st.title("Something is being created here!")
+        st.info(f'The selected stock has the potential to reach {target_price} USD in the next 100 days')
+
+        
+        
+        st.pyplot(fig2)

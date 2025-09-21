@@ -42,7 +42,7 @@ def generate_verdict(data,short_sma,long_sma,lower_band,upper_band,rsi):
     # Bollinger Bands signal
     bollinger_percentage=(data['Close'].iloc[-1] - lower_band.iloc[-1]) / (upper_band.iloc[-1] - lower_band.iloc[-1])
 
-    if bollinger_percentage < 0.2 and bollinger_percentage > 0:
+    if bollinger_percentage < 0.2 :
         sell_signals += 3
     elif bollinger_percentage >= 0.2 and bollinger_percentage <= 0.4:
         sell_signals += 1
@@ -94,9 +94,9 @@ def generate_verdict(data,short_sma,long_sma,lower_band,upper_band,rsi):
     macd_difference= macd_line - signal_line
     macd_scale= (macd_difference / signal_line) * 100
 
-    if macd_scale.iloc[-1] > 2 and macd_scale.iloc[-1] < 8:
+    if macd_scale.iloc[-1] > 2 and macd_scale.iloc[-1] < 9:
         buy_signals += 1
-    elif macd_scale.iloc[-1] < -2:
+    elif macd_scale.iloc[-1] < -2 and macd_scale.iloc[-1] > -9:
         sell_signals += 1
     elif macd_scale.iloc[-1] >= 10 :
         buy_signals += 3

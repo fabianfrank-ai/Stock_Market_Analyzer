@@ -3,6 +3,7 @@ from data.fetch_data import fetch_stock_data
 from core.indicators import sma,  bollinger_bands, rsi, price_change, ema, macd , moving_average_crossover, atr
 from core.verdict import generate_verdict
 from GUI.user_interface import sidebar, sliders, tab_stock_chart, header, tab_init, tab_heatmap, tab_portfolio_calculator
+from core.prediction import prediction
 
 # create Title and color theme for the web app
 header()
@@ -18,11 +19,11 @@ selected_indicators = sidebar()
 # use sliders function to get period and stock
 
 period, stock =sliders()
-data=fetch_stock_data(stock, f'{period}')
 
 
 # fetch the stock data
 data = fetch_stock_data(stock, f'{period}y')
+data_1_y = fetch_stock_data(stock, '1y')
 
 
 # handle errors in case the stock ticker is invalid
@@ -65,6 +66,7 @@ price_change = price_change(data)
 
 atr = atr(data)
 
+data_pred = prediction(data_1_y)
 
 tab_stock_chart(stock, price_change, data, selected_indicators, data_sma_30, data_sma_100, crossover_data_sma, crossover_type_sma,
                     upper_band, lower_band, ema_12, ema_26, crossover_data_ema, crossover_type_ema, macd_line, signal_line, rsi,
@@ -72,4 +74,5 @@ tab_stock_chart(stock, price_change, data, selected_indicators, data_sma_30, dat
 
 tab_heatmap()
 
-tab_portfolio_calculator()
+tab_portfolio_calculator(data_pred, data)
+

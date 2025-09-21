@@ -12,7 +12,7 @@ def sma(data, window):
     # SMA = sum of closing prices over the window / window size (SMA30 and 100 are used, so window=100)
     # https://medium.com/analytics-vidhya/sma-short-moving-average-in-python-c656956a08f8
     
-    sma=data['Close'].rolling(window=window).mean()
+    sma=data['Close'].rolling(window = window).mean()
 
 
     return sma
@@ -53,8 +53,8 @@ def bollinger_bands(data,window):
     # The upper band is typically 2 standard deviations above the SMA, and the lower band is 2 standard deviations below the SMA.
     # typically if the current market price is near/above the upper band, the asset is considered overbought
     # if the price is near/below the lower band, the asset is considered oversold
-    sma= data['Close'].rolling(window=window).mean()
-    std = data['Close'].rolling(window=window).std()
+    sma= data['Close'].rolling(window = window).mean()
+    std = data['Close'].rolling(window = window).std()
     upper_band = sma + (std * 2)
     lower_band = sma - (std * 2) 
 
@@ -71,8 +71,8 @@ def rsi(data, window):
     # RS = Average Gain / Average Loss over the specified window
     # Typically, an RSI above 70 indicates overbought conditions, while an RSI below 30 indicates oversold conditions.
     delta = data['Close'].diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=window).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=window).mean()
+    gain = (delta.where(delta > 0, 0)).rolling(window = window).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window = window).mean()
     rs = gain / loss
     rsi = 100 - (100 / (1 + rs))
 
@@ -99,12 +99,12 @@ def ema(data, window):
     # EMA gives more weight to recent prices, making it more responsive to new information.
     # EMA_today = (Price_today * (smoothing / (1 + window))) + (EMA_yesterday * (1 - (smoothing / (1 + window))))
     # A common smoothing factor is 2.
-    ema = data['Close'].ewm(span=window, adjust=False).mean()
+    ema = data['Close'].ewm(span = window, adjust = False).mean()
     return ema
 
 
 
-def macd(data, short_window=12, long_window=26, signal_window=9):
+def macd(data, short_window = 12, long_window = 26, signal_window = 9):
     """Calculate Moving Average Convergence Divergence (MACD)"""
 
 
@@ -113,7 +113,7 @@ def macd(data, short_window=12, long_window=26, signal_window=9):
     ema_short = ema(data, short_window)
     ema_long = ema(data, long_window)
     macd_line = ema_short - ema_long
-    signal_line = macd_line.ewm(span=signal_window, adjust=False).mean()
+    signal_line = macd_line.ewm(span = signal_window, adjust = False).mean()
     return macd_line, signal_line
 
 
@@ -129,7 +129,7 @@ def atr(data, window=14):
     true_ranges['L-PC'] = abs(data['Low'] - data['Close'].shift(1))
     true_range = true_ranges.max(axis=1)
 
-    atr = true_range.rolling(window=window).mean()
+    atr = true_range.rolling(window = window).mean()
 
     # scale atr to be between 0 and 100
     atr_scaled = (atr / atr.max())  * 100
