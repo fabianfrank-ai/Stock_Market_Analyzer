@@ -7,6 +7,7 @@ import numpy as np
 import community.community_louvain as community_louvain # suggestion by ChatGPT in a brainstorming session
 from scipy.spatial import ConvexHull
 from core.market_screener import correlations
+import plotly.io as pio
 
 def create_network(df_correlation, threshold):
     '''Creates a network graph out of a correlation matrix'''
@@ -34,6 +35,9 @@ def create_network(df_correlation, threshold):
 def plot_network(df_correlation, threshold):
     '''Plots the graph with plotly'''
     G = create_network(df_correlation, threshold)
+
+
+    pio.templates.default = "plotly_dark"
 
 
     # use spring layout, most meaningful
