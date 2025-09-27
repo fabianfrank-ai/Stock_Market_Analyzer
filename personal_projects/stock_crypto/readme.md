@@ -5,15 +5,29 @@ It fetches data from yfinance(yahoo finance), uses simple indication techniques 
 
 The project is still under construction and still lacks finetuning, this is only a broad framework.
 
-# Explanation for all the files:
-Main.py - Framework for streamlit, also works as a bridge between the user and all programs listed below
+## Explanation 
 
-Database.py - is not used due to inconvenience, might be added in the future. It creates databases and saves desired data
+The project is devided into 3 folders and the main.py file:
 
-Fetch_data.py - fetches data from yfinance , integral part for the incoming data
+The main file is used as the main framework and used as a bridge between the Streamlit interface as well as the data fetched and used for calculations.
 
-indicators.py - uses common indicators(SMA,RSI,MACD etc) used in economics to evaluate stocks and give a verdict on whether to buy, hold or sell
+The data folder is integral in order to fetch data from the web via yfinance and return it to the other projects. It also contains a database function for SQLite3, which is not used as of now but might be in the future.
 
-market_screener.py - screens the market for the S&P 500 stocks to create the heatmap or give verdicts to main
+The core folder contains the core functionalities and juggling with data. The fetched data get's processed and is used for calculations for indicators or even a verdict of the next 100 days.
 
-verdict.py - Uses SMA, RSI, MACD, EMA and Bollinger and checks for certain thresholds that indicate a good or bad stock to buy
+As the project thrives to be user-friendly there is also a seperate GUI folder for the Streamlit GUI. It was previously cramped in the main file but the seperate just keeps the code readable and somewhat tidy. Most of it is just plotting and writing so nothing too complex there
+
+
+## Future ideas: 
+
+- Add more companies (e.g. DAX or NASDAQ) into the heatmap and make it more interactive
+
+- Make Heatmap not disappear with every refresh. Maybe also implement a Heatmap timeline where the user can browse through the dates. Could be done with SQL
+
+- Add a "News Tab" showing general news for stocks but also specific ones depending on the stock the user chooses
+
+- Forgot to add sliders and textbox to the prediction tab, probably the next addition
+
+- Portfolio calculator linked with user registration and maybe some kind of newsletter
+
+- Implement sklearn

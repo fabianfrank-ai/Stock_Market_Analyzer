@@ -71,7 +71,7 @@ def retreive_data(data):
 
 
 
-def prediction(data):
+def prediction(data, timeframe):
         '''Create a rough estimate of how the future price might develop'''
      
         data_pred = data.copy()
@@ -82,7 +82,7 @@ def prediction(data):
         
         # predict the first 100 days for simplicity and as placeholder
 
-        for i in range(100):
+        for i in range(timeframe):
                
                trend_score = retreive_data(data_pred)
                

@@ -4,3 +4,6 @@ matplotlib
 streamlit
 yfinance
 lxml
+scikit-learn
+networkx
+plotly

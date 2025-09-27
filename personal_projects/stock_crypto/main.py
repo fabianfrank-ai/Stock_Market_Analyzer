@@ -1,9 +1,31 @@
 import streamlit as st
+import pandas as pd
 from data.fetch_data import fetch_stock_data
 from core.indicators import sma,  bollinger_bands, rsi, price_change, ema, macd , moving_average_crossover, atr
 from core.verdict import generate_verdict
-from GUI.user_interface import sidebar, sliders, tab_stock_chart, header, tab_init, tab_heatmap, tab_portfolio_calculator
+from GUI.user_interface import sidebar, user_input, user_portfolio, tab_stock_chart, header, tab_init, tab_heatmap, tab_portfolio_calculator, tab_prediction
 from core.prediction import prediction
+from data.sklearn_prediction import sklearn_prediction
+from core.portfolio import generate_portfolio
+from core.network_graphing import network_graph
+
+
+
+
+# create variables in session state so they don't get erased with each refresh
+if 'bought_stocks' not in st.session_state:
+    st.session_state.bought_stocks = None
+
+if 'buy_in_price' not in st.session_state:
+    st.session_state.buy_in_price = None
+
+if 'amount_bought' not in st.session_state:
+    st.session_state.amount_bought = None
+
+if 'portfolio_df' not in st.session_state:
+    st.session_state.portfolio_df = None
+
+
 
 # create Title and color theme for the web app
 header()
@@ -12,18 +34,29 @@ header()
 # initialize tabs used
 tab_init()
 
-# use sidebar function in user_interface to keep main.py clean
-selected_indicators = sidebar()
+sidebar()
+
+# use sliders function to get user input
+
+period, stock, period_prediction, stock_prediction, predicted_time_frame, selected_indicators = user_input()
+
+try:
+    st.session_state.bought_stocks, st.session_state.buy_in_price, st.session_state.amount_bought = user_portfolio()
+    st.session_state.buy_in_price = float(st.session_state.buy_in_price)
+    st.session_state.amount_bought =float(st.session_state.amount_bought)
+except Exception as e:
+    pass
 
 
-# use sliders function to get period and stock
 
-period, stock =sliders()
+
 
 
 # fetch the stock data
 data = fetch_stock_data(stock, f'{period}y')
-data_1_y = fetch_stock_data(stock, '1y')
+data_prediction_now = fetch_stock_data(stock_prediction, f'{period_prediction}y')
+
+
 
 
 # handle errors in case the stock ticker is invalid
@@ -58,15 +91,19 @@ crossover_data_sma = crossover_type_sma.index
 crossover_type_ema = moving_average_crossover(data, ema_12, ema_26)
 crossover_data_ema = crossover_type_ema.index
 
+if st.session_state.bought_stocks and st.session_state.amount_bought and st.session_state.buy_in_price is not None:
+    st.session_state.portfolio_df = generate_portfolio(st.session_state.bought_stocks, st.session_state.amount_bought, st.session_state.buy_in_price)
+
 
 
 # calculate the price change percentage over the selected period
 price_change = price_change(data)
 
+Y_prediction_sk, X_prediction_sk = sklearn_prediction(data)
 
 atr = atr(data)
 
-data_pred = prediction(data_1_y)
+data_pred_future = prediction(data_prediction_now, predicted_time_frame)
 
 tab_stock_chart(stock, price_change, data, selected_indicators, data_sma_30, data_sma_100, crossover_data_sma, crossover_type_sma,
                     upper_band, lower_band, ema_12, ema_26, crossover_data_ema, crossover_type_ema, macd_line, signal_line, rsi,
@@ -74,5 +111,8 @@ tab_stock_chart(stock, price_change, data, selected_indicators, data_sma_30, dat
 
 tab_heatmap()
 
-tab_portfolio_calculator(data_pred, data)
+tab_prediction(data_pred_future, data_prediction_now, X_prediction_sk, Y_prediction_sk, predicted_time_frame)
 
+
+if st.session_state.portfolio_df is not None:
+    tab_portfolio_calculator(st.session_state.portfolio_df)

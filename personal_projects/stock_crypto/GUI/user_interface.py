@@ -8,16 +8,21 @@
 
 import streamlit as st
 import matplotlib.pyplot as plt
-from core.market_screener import heatmap, market_screener
+from core.market_screener import heatmap, market_screener, heatmap_portfolio
 from GUI.colour_coding import color_code, verdict_color, rsi_color, ema_color, macd_color, sma_color, bollinger_color, atr_color
+
+
 
 def tab_init():
     '''Initializes all the tabs used for the GUI for the User to switch between views and features'''
     
-    global tab1, tab2, tab3
+    global tab1, tab2, tab3, tab4
 
     # create tabs with streamlit
-    tab1,tab2,tab3 = st.tabs(["Stock Prices 📈", "Heatmap 🟩🟨🟥", "Stock Prediction 💹"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Stock Prices 📈", "Heatmap 🟩🟨🟥", 
+                                      "Stock Prediction 💹", "Portfolio Calculator"])
+
+
 
 
 
@@ -41,6 +46,9 @@ def header():
     # Streamlit app layout with title and description
     st.title ('Stock Price Viewer' )
     st.write('This app fetches and displays historical stock price data using yfinance and Streamlit.')
+
+
+
 
 
 def sidebar():
@@ -99,13 +107,7 @@ def sidebar():
                     st.success(f'Potential Buy Opportunity Found: {ticker} - Verdict: {verdict}')
                 else:
                     st.info('No Buy Opportunities Found at this time.')
-    
-        with st.sidebar.expander('Indicators'):
-
-            options = ['SMA', 'Bollinger Bands', 'EMA', 'MACD', 'RSI']
-            selected_indicators = st.multiselect('Select Indicators to Display', options, default=['SMA', 'Bollinger Bands', 'RSI'])
-            st.write('You can select which technical indicators to display on the chart. By default, SMA, Bollinger Bands, and RSI are selected.')
-        
+       
         with st.sidebar.expander('How does the prediction work?'):
             st.write('The prediction uses all of the indicators of the most recent data and calculates how the price could evolve based on them')
             st.write('Indicators are scaled and added together to form a weight which will be applied to the data')
@@ -119,24 +121,58 @@ def sidebar():
             st.write('- Integrate real-time data updates for live stock prices.')
             st.write('- Add educational resources about stock trading and technical analysis.')
 
-        return selected_indicators
+    
 
 
 
 
 
-def sliders():
+def user_input():
     '''Create user interface for user to chose his own data'''
     # create sliders for user input(time range and selected stock)
     # was not sure whether to include this in user_interface but it's here now for tidiness
-    
+   
     with tab1:
-        period = st.slider('Select Period', min_value=1, max_value=20, value=10, help='Select the number of years to fetch data for (1-20 years)')
-        stock = st.text_input('Select Stock ticker (AMZN, MSFT, META)',  help='Select the stock symbol to fetch data for', value='AMZN')
-
+            period = st.slider('Select Period', min_value = 1, max_value = 20, value = 10, help='Select the number of years to fetch data for (1-20 years)')
+            stock = st.text_input('Select Stock ticker (AMZN, MSFT, META)',  help='Select the stock symbol to fetch data for', value='AMZN')
+            options = ['SMA', 'Bollinger Bands', 'EMA', 'MACD', 'RSI']
+            selected_indicators = st.multiselect('Select Indicators to Display', options, default=['SMA', 'Bollinger Bands', 'RSI'])
+    with tab3:
+            period_prediction = st.slider('Select Period', min_value = 1, max_value = 20, value = 10, help =' Select the number of years to fetch data for (1-20 years)', key = "Slider Tab 3")
+            predicted_time_frame = st.slider('Select the timeframe you want to predict', min_value = 5, max_value = 120, value = 60, help = 'Decides the length of the prediction. NOTE: Larger timeframes might be unrealistic') 
+            stock_prediction = st.text_input('Select Stock ticker (AMZN, MSFT, META)',  help='Select the stock symbol to fetch data for', value='AMZN', key="Input tab 3")
 
     
-    return period, stock
+    return period, stock, period_prediction, stock_prediction, predicted_time_frame, selected_indicators
+
+
+
+
+
+
+def user_portfolio():
+    ''' Use this to get the data from the user for the portfolio'''
+
+    with tab4:
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            stock_buy = st.text_input("Enter Stock ticker")
+
+        with col2:
+            stock_amount = st.text_input ("Enter the amount you bought")
+
+        with col3:
+            buy_in_price = st.text_input(" Enter Buy-in price")
+               
+    
+   
+ 
+        if stock_buy and buy_in_price and stock_amount:
+            if st.button("Add"):
+                return stock_buy, buy_in_price, stock_amount  
+
+
 
 
 
@@ -313,27 +349,41 @@ def tab_heatmap():
     '''Create a heatmap and display it as streamlit dataframe'''
 
     with tab2:
-        if st.button("Create Heatmap"):
-         
-            # create a dataframe(pandas) with the heatmap function initialized in the data folder
-            with st.spinner('Generating heatmap... This may take a moment.'):
-                    heatmap_data = heatmap()
+        col1, col2 = st.columns (2)
+        with col1:
+            if st.button("Create Heatmap"):
+            
+                # create a dataframe(pandas) with the heatmap function initialized in the data folder
+                with st.spinner('Generating heatmap... This may take a moment.'):
+                        heatmap_data = heatmap()
 
-            st.write('S&P 500 Daily Change Percentage:')
-            st.dataframe(heatmap_data.style
-                            .map(color_code, subset=['Change'])
-                            .map(verdict_color, subset=['Verdict'])
-                            .map(sma_color, subset=['SMA Diff'])
-                            .map(rsi_color, subset=['RSI'])
-                            .map(bollinger_color, subset=['Bollinger %']) 
-                            .map(ema_color, subset=['EMA Diff'])
-                            .map(macd_color, subset=['MACD Diff'])
-                            .map(atr_color, subset=['Risk']))
+                st.write('S&P 500 Daily Change Percentage:')
+                st.dataframe(heatmap_data.style
+                                .map(color_code, subset=['Change'])
+                                .map(verdict_color, subset=['Verdict'])
+                                .map(sma_color, subset=['SMA Diff'])
+                                .map(rsi_color, subset=['RSI'])
+                                .map(bollinger_color, subset=['Bollinger %']) 
+                                .map(ema_color, subset=['EMA Diff'])
+                                .map(macd_color, subset=['MACD Diff'])
+                                .map(atr_color, subset=['Risk']))
+
+        ### NOT OPERATIONAL ###                       
+        #with col2:
+            #if st.button("Create correlation Heatmap"):
+
+               # with st.spinner ("Generating...Might take a moment"):
+
+                   # corr_heatmap = correlation_heatmap()
+
+               # st.dataframe(corrheatmap)
          
+
+
 
 
         
-def tab_portfolio_calculator(data_pred, data):
+def tab_prediction(data_pred, data, sk_data_x, sk_data_y, timeframe):
     '''Create a portfolio calculator for input given by the user'''
 
     # the idea has not been implemented yet as I'm not sure how to do it, will be worked on over the weekend
@@ -345,18 +395,46 @@ def tab_portfolio_calculator(data_pred, data):
         ax.set_ylabel('Price (USD)') 
         ax.grid()
         
-        ax.plot(data.index, data['Close'], label= "Stock price", zorder=4 )
-        ax.plot(data_pred.index, data_pred['Close'], label= "Stock price prediction for the next 100 days", color="#24FF07", linestyle = "--" )
-        
+        ax.plot(data.index, data['Close'], label = "Stock price in the past", color = 'red', zorder = 5)
+        ax.plot(data_pred.index, data_pred['Close'], label = f"Stock price prediction for the next {timeframe} days", color = "#24FF07", linestyle = "--" )
+
+        # removed due to bugfixing
+        #ax.plot(sk_data_x, sk_data_y, label = "Sklearn Prediction")
         ax.legend()
         
-        # take the most recent price in the prediction to indicate a potential price in the next 100 days
+        # take the most recent price in the prediction to indicate a potential price in the next n days
         target_price = data_pred['Close'].iloc[-1]
         target_price = round(target_price, 2) 
         
 
-        st.info(f'The selected stock has the potential to reach {target_price} USD in the next 100 days')
+        st.info(f'The selected stock has the potential to reach {target_price} USD in the next {timeframe} days')
 
         
         
         st.pyplot(fig2)
+
+
+
+
+
+
+def tab_portfolio_calculator(portfolio_df):
+    """Plotting of the portfolio calculator based with the input by a user"""
+    with tab4:
+        # visualize the dataframe and heatmap of the portfolio
+        st.dataframe(portfolio_df.style.map(color_code, subset=['Change%']))
+
+        heatmap_portf = heatmap_portfolio(portfolio_df)
+
+        st.dataframe(heatmap_portf.style
+                            .map(color_code, subset=['Change'])
+                            .map(verdict_color, subset=['Verdict'])
+                            .map(sma_color, subset=['SMA Diff'])
+                            .map(rsi_color, subset=['RSI'])
+                            .map(bollinger_color, subset=['Bollinger %']) 
+                            .map(ema_color, subset=['EMA Diff'])
+                            .map(macd_color, subset=['MACD Diff'])
+                            .map(atr_color, subset=['Risk']))
+
+        st.info ("Note that you can only add one stock of each kind")
+            

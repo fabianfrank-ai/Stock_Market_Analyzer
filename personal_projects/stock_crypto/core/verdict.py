@@ -9,6 +9,7 @@ import pandas as pd
 from core.indicators import ema, macd
 
 def generate_verdict(data,short_sma,long_sma,lower_band,upper_band,rsi):
+    
     """Generate a trading verdict based on multiple technical indicators."""
   
     # at the beginning of the function, set the signals to 0, as there is no data yet
