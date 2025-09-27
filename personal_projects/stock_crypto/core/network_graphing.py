@@ -155,7 +155,10 @@ def plot_network(df_correlation, threshold):
         yaxis = dict(showgrid = False, zeroline = False, showticklabels = False),
         plot_bgcolor = 'black',
         paper_bgcolor='black',
-        font_color='white')
+        font_color='white',
+        hoverlabel=dict(
+        bgcolor="black",
+        font_color="white"))
     
 
 
