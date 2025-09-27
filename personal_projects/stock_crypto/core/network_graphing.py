@@ -4,7 +4,7 @@ import pandas as pd
 import networkx as nx
 import plotly.graph_objects as go
 import numpy as np
-import community # suggestion by ChatGPT in a brainstorming session
+import community.community_louvain as community_louvain # suggestion by ChatGPT in a brainstorming session
 from scipy.spatial import ConvexHull
 from core.market_screener import correlations
 
@@ -168,7 +168,7 @@ def plot_network(df_correlation, threshold):
 def clustering(G, pos):
     '''Cluster the data'''
 
-    partition = community.best_partition(G)
+    partition = community_louvain.best_partition(G)
  
 
 
