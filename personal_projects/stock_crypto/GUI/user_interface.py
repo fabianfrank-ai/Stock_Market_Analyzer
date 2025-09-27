@@ -7,20 +7,22 @@
 # I did it and it feels like it's overcomplicating things , might revert
 
 import streamlit as st
+import pandas as pd
 import matplotlib.pyplot as plt
-from core.market_screener import heatmap, market_screener, heatmap_portfolio
+from core.market_screener import heatmap, market_screener, heatmap_portfolio, correlations
 from GUI.colour_coding import color_code, verdict_color, rsi_color, ema_color, macd_color, sma_color, bollinger_color, atr_color
+from core.network_graphing import plot_network
 
 
 
 def tab_init():
     '''Initializes all the tabs used for the GUI for the User to switch between views and features'''
     
-    global tab1, tab2, tab3, tab4
+    global tab1, tab2, tab3, tab4, tab5
 
     # create tabs with streamlit
-    tab1, tab2, tab3, tab4 = st.tabs(["Stock Prices 📈", "Heatmap 🟩🟨🟥", 
-                                      "Stock Prediction 💹", "Portfolio Calculator"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Stock Prices 📈", "Heatmap 🟩🟨🟥", 
+                                      "Stock Prediction 💹", "Portfolio Calculator", "Experimental : Networking Graph"])
 
 
 
@@ -141,7 +143,6 @@ def user_input():
             period_prediction = st.slider('Select Period', min_value = 1, max_value = 20, value = 10, help =' Select the number of years to fetch data for (1-20 years)', key = "Slider Tab 3")
             predicted_time_frame = st.slider('Select the timeframe you want to predict', min_value = 5, max_value = 120, value = 60, help = 'Decides the length of the prediction. NOTE: Larger timeframes might be unrealistic') 
             stock_prediction = st.text_input('Select Stock ticker (AMZN, MSFT, META)',  help='Select the stock symbol to fetch data for', value='AMZN', key="Input tab 3")
-
     
     return period, stock, period_prediction, stock_prediction, predicted_time_frame, selected_indicators
 
@@ -349,16 +350,18 @@ def tab_heatmap():
     '''Create a heatmap and display it as streamlit dataframe'''
 
     with tab2:
-        col1, col2 = st.columns (2)
-        with col1:
-            if st.button("Create Heatmap"):
-            
+        # only create heatmap if it's not been created yet
+        if st.button("Create Heatmap"):
+           
                 # create a dataframe(pandas) with the heatmap function initialized in the data folder
                 with st.spinner('Generating heatmap... This may take a moment.'):
-                        heatmap_data = heatmap()
+                        st.session_state.heatmap_data = heatmap()
 
                 st.write('S&P 500 Daily Change Percentage:')
-                st.dataframe(heatmap_data.style
+
+    
+
+                st.dataframe(st.session_state.heatmap_data.style
                                 .map(color_code, subset=['Change'])
                                 .map(verdict_color, subset=['Verdict'])
                                 .map(sma_color, subset=['SMA Diff'])
@@ -367,16 +370,11 @@ def tab_heatmap():
                                 .map(ema_color, subset=['EMA Diff'])
                                 .map(macd_color, subset=['MACD Diff'])
                                 .map(atr_color, subset=['Risk']))
+                
 
-        ### NOT OPERATIONAL ###                       
-        #with col2:
-            #if st.button("Create correlation Heatmap"):
+                heatmap_csv = st.session_state.heatmap_data.to_csv(index = False).encode('utf-8')
+                st.download_button(label = "Export Heatmap as CSV", data = heatmap_csv, file_name = "Heatmap.csv", mime = "text/csv")
 
-               # with st.spinner ("Generating...Might take a moment"):
-
-                   # corr_heatmap = correlation_heatmap()
-
-               # st.dataframe(corrheatmap)
          
 
 
@@ -386,7 +384,6 @@ def tab_heatmap():
 def tab_prediction(data_pred, data, sk_data_x, sk_data_y, timeframe):
     '''Create a portfolio calculator for input given by the user'''
 
-    # the idea has not been implemented yet as I'm not sure how to do it, will be worked on over the weekend
 
     with tab3:
         fig2, ax = plt.subplots(figsize = (16,8))
@@ -438,3 +435,33 @@ def tab_portfolio_calculator(portfolio_df):
 
         st.info ("Note that you can only add one stock of each kind")
             
+
+
+
+def tab_network_graph():
+    '''Plot the networking graph'''
+
+
+    if 'df_correlation' not in st.session_state:
+        st.session_state.df_correlation = None
+
+    with tab5:
+
+        st.write("Creates a Network Graph showing correlations between market movements of S&P 500 companies in the past 6 months")
+        threshold = st.slider("Threshold for the correlations", min_value = 0.3, max_value = 1.0, value = 0.7, help = "Bigger correlations usually mean companies are very connected. NOTE: Be aware that a low threshold might slow your PC!")
+        
+        if st.button("Create a networking Graph"):
+
+           with st.spinner("This will take a while...Please wait"):
+                if st.session_state.df_correlation is None: 
+                    st.session_state.df_correlation = correlations() 
+
+                else: 
+                    pass
+
+                fig3 = plot_network(st.session_state.df_correlation, threshold)
+                st.plotly_chart(fig3)
+
+
+    
+                

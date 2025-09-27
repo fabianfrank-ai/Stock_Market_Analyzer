@@ -7,3 +7,5 @@ lxml
 scikit-learn
 networkx
 plotly
+python-louvain
+community

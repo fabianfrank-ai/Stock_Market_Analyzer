@@ -3,103 +3,208 @@
 import pandas as pd
 import networkx as nx
 import plotly.graph_objects as go
-
+import numpy as np
+import community # suggestion by ChatGPT in a brainstorming session
+from scipy.spatial import ConvexHull
 from core.market_screener import correlations
 
-def network_graph():
-    G = nx.random_geometric_graph(100, 0.125)
-    edges = []
-    df_correlations = correlations()
+def create_network(df_correlation, threshold):
+    '''Creates a network graph out of a correlation matrix'''
 
-    # filter for strong correlations and create nodes based on tickers, create edges if value is bigger than threshold
-    threshold = 0.6
+    G = nx.Graph()
 
-    for i, node1 in enumerate(df_correlations.columns):
+    # add nodes to G
+    nodes = df_correlation.index.to_list()
 
-        for j, node2 in enumerate(df_correlations.columns):
+    G.add_nodes_from(nodes)
 
-            if i < j:
 
-                 corr_value = df_correlations.iloc[i, j]
-
+    # add edges based on threshold
+    for i in range(len(nodes)):
+        for j in range(i+1, len(nodes)):
+            corr_value = df_correlation.iloc[i, j]
             if abs(corr_value) >= threshold:
-                edges.append((node1, node2, corr_value))
-
-
-    # add nodes and edges to graph
-    for edge in edges:
-        node1, node2, weight = edge
-        G.add_edge(node1, node2, weight = weight) 
-
+                G.add_edge(nodes[i], nodes[j], weight = corr_value)
     
-    for ticker in df_correlations.columns:
-        G.add_node(ticker)
+    return G
+
+
+
+# threshold is chosen for best performance and visibility
+def plot_network(df_correlation, threshold):
+    '''Plots the graph with plotly'''
+    G = create_network(df_correlation, threshold)
+
+
+    # use spring layout, most meaningful
+    pos = nx.spring_layout(G, k = 1, iterations = 50, seed = 42)
+ 
+    
+    # create lists for edges
+    edge_x = []
+    edge_y = []
+    edge_info = []
+    edge_colors = []
     
 
+    # append the lists with data from the edges
+    for edge in G.edges():
+        x0, y0 = pos[edge[0]]
+        x1, y1 = pos[edge[1]]
+        edge_x.extend([x0, x1, None])
+        edge_y.extend([y0, y1, None])
+        
+        weight = G[edge[0]][edge[1]]['weight']
+        edge_info.append(f'{edge[0]} - {edge[1]}: {weight:.3f}')
+        
+        if weight > 0:
+            edge_colors.extend(['green', 'green', None])
+        else:
+            edge_colors.extend(['red', 'red', None])
+    
 
-    # trace edges and nodes for plotting
-    edge_trace = go.Scatter(
-    x = edge_x, y = edge_y,
-    line = dict(width = 0.5, color = '#888'),
-    hoverinfo = 'none',
-    mode = 'lines')
-
-    node_trace = go.Scatter(
-    x = node1, y = node2,
-    mode = 'markers',
-    hoverinfo = 'text',
-    marker = dict(
-        showscale = True,
-        colorscale = 'Electric',
-        reversescale = True,
-        color = [],
-        size = 10,
-        colorbar = dict(
-            thickness = 15,
-            title = dict(
-              text = 'Node Connections',
-              side = 'right'
-            ),
-            xanchor = 'left',
-        ),
-        line_width = 2))
-
-
-    # Colour the node points
-    node_adjacencies = []
+    # create lists for nodes
+    node_x = []
+    node_y = []
     node_text = []
-
-    for node, adjacencies in enumerate(G.adjacency()):
-        node_adjacencies.append(len(adjacencies[1]))
-        node_text.append('# of connections: '+str(len(adjacencies[1])))
-
-    node_trace.marker.color = node_adjacencies
-    node_trace.text = node_text
+    node_colors = []
+    
 
 
+    # aoppend with data from teh edges
+    for node in G.nodes():
+        x, y = pos[node]
+        node_x.append(x)
+        node_y.append(y)
+        
+       
+        adjacencies = list(G.neighbors(node))
+        node_info = f'{node}<br>Connections: {len(adjacencies)}'
+        if len(adjacencies) > 0:
+            correlations = [G[node][adj]['weight'] for adj in adjacencies]
+            avg_corr = np.mean(correlations)
+            node_info += f'<br>Avg Correlation: {avg_corr:.3f}'
+        node_text.append(node_info)
+        
+        # change colours based on amount of adjacencies
+        node_colors.append(len(adjacencies))
+    
+
+    # create plotly figure
+    global fig
+    fig = go.Figure()
+
+    clustering(G, pos)
+
+    # add edges
+    fig.add_trace(go.Scatter(
+        x = edge_x, y = edge_y,
+        line = dict(width = 1, color = '#8888aa'),
+        hoverinfo = 'none',
+        mode = 'lines',
+        name = 'Connections'
+    ))
 
 
-    fig = go.Figure(data=[edge_trace, node_trace],
-             layout=go.Layout(
-                title=dict(
-                    text="<br>Network graph made with Python",
-                    font=dict(
-                        size=16
-                    )
-                ),
-                showlegend=False,
-                hovermode='closest',
-                margin=dict(b=20,l=5,r=5,t=40),
-                annotations=[ dict(
-                    text="Python code: <a href='https://plotly.com/python/network-graphs/'> https://plotly.com/python/network-graphs/</a>",
-                    showarrow=False,
-                    xref="paper", yref="paper",
-                    x=0.005, y=-0.002 ) ],
-                xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
-                )
-    fig.show()
+    
+    # add nodes
+    fig.add_trace(go.Scatter(
+        x = node_x, y = node_y,
+        mode = 'markers+text',
+        hoverinfo = 'text',
+        text = list(G.nodes()),
+        hovertext = node_text,
+        textposition = "middle center",
+        marker = dict(
+            showscale = True,
+            colorscale = 'Plotly3',
+            color = node_colors,
+            size = 20,
+            colorbar = dict(
+                thickness = 15,
+                len = 0.5,
+                x = 1.1,
+                title = "Connections"
+            ),
+            line = dict(width = 2, color = 'white')
+        ),
+        name = 'Stocks'
+    ))
+    
+    
 
+
+    # created with the help of claude since I usually never use plotly
+    fig.update_layout(
+        title = dict(       
+            text = f'Stock Correlation Network (threshold: {threshold})',
+            font = dict(size = 16)
+        ),
+        autosize = True,
+        showlegend = False,
+        hovermode = 'closest',
+        margin = dict(b = 20,l = 5,r = 5,t = 40),
+        annotations = [ dict(
+            showarrow = False,
+            xref = "paper", yref = "paper",
+            x = 0.005, y = -0.002,
+            xanchor = 'left', yanchor = 'bottom',
+            font = dict(color = 'gray', size = 10)
+        )],
+        xaxis = dict(showgrid = False, zeroline = False, showticklabels = False),
+        yaxis = dict(showgrid = False, zeroline = False, showticklabels = False),
+        plot_bgcolor = 'black'
+        )
+    
+
+
+
+    return fig
+
+
+
+
+
+def clustering(G, pos):
+    '''Cluster the data'''
+
+    partition = community.best_partition(G)
+ 
+
+
+    # Group the clusters
+    clusters = {}
+    for node, cid in partition.items():
+        clusters.setdefault(cid, []).append(node)
+
+    # Create a convec hull and a shape
+    for cid, nodes in clusters.items():
+        if len(nodes) >= 3:
+    
+            points = np.array([pos[node] for node in nodes])
+            hull = ConvexHull(points)
+            hull_points = points[hull.vertices]
+
+            x_hull = list(hull_points[:,0]) + [hull_points[0,0]]
+            y_hull = list(hull_points[:,1]) + [hull_points[0,1]]
+
+            # color code the clusters
+            color = f"rgba({(cid*53)%256}, {(cid*97)%256}, {(cid*137)%256}, 0.2)"
+
+            # add clusters as shape
+            fig.add_shape(
+                    type="path",
+                    path="M " + " L ".join(f"{x},{y}" for x, y in zip(x_hull, y_hull)) + " Z",
+                    fillcolor = color,
+                    line=dict(color="rgba(100, 100, 255, 0.2)"),
+                    layer="below")
+
+        else:
+            continue
+   
+
+
+    return x_hull, y_hull, color
 
 
 

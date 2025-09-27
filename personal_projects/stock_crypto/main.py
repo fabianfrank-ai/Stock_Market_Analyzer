@@ -3,11 +3,12 @@ import pandas as pd
 from data.fetch_data import fetch_stock_data
 from core.indicators import sma,  bollinger_bands, rsi, price_change, ema, macd , moving_average_crossover, atr
 from core.verdict import generate_verdict
-from GUI.user_interface import sidebar, user_input, user_portfolio, tab_stock_chart, header, tab_init, tab_heatmap, tab_portfolio_calculator, tab_prediction
+from GUI.user_interface import sidebar, user_input, user_portfolio, tab_stock_chart, header, tab_init, tab_heatmap, tab_portfolio_calculator, tab_prediction, tab_network_graph
 from core.prediction import prediction
 from data.sklearn_prediction import sklearn_prediction
 from core.portfolio import generate_portfolio
-from core.network_graphing import network_graph
+from core.network_graphing import plot_network
+
 
 
 
@@ -116,3 +117,5 @@ tab_prediction(data_pred_future, data_prediction_now, X_prediction_sk, Y_predict
 
 if st.session_state.portfolio_df is not None:
     tab_portfolio_calculator(st.session_state.portfolio_df)
+
+tab_network_graph()
