@@ -153,8 +153,9 @@ def plot_network(df_correlation, threshold):
         )],
         xaxis = dict(showgrid = False, zeroline = False, showticklabels = False),
         yaxis = dict(showgrid = False, zeroline = False, showticklabels = False),
-        plot_bgcolor = 'black'
-        )
+        plot_bgcolor = 'black',
+        paper_bgcolor='black',
+        font_color='white')
     
 
 
