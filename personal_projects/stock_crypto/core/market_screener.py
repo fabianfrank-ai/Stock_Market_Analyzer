@@ -3,7 +3,7 @@
 import pandas as pd
 import numpy as np
 import urllib.request
-from data.fetch_data import fetch_stock_data
+from data.fetch_data import fetch_stock_data, fetch_stock_data_set_dates
 from core.indicators import sma, bollinger_bands, rsi, ema, macd , atr
 from core.verdict import generate_verdict
 
@@ -268,8 +268,10 @@ def heatmap_portfolio(portfolio):
 
 
 
-def correlations():
-
+def correlations(start, end):
+   '''Calculates the correlations of the S&P 500 stock movements within the past 6 months'''
+   
+   
    url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
    html = urllib.request.urlopen(req).read()
@@ -284,10 +286,12 @@ def correlations():
       try:
          
          # fetch data
-         data = fetch_stock_data(ticker, "6mo")
-
-         if data.empty:
-            continue
+         if start and end is None: 
+             data = fetch_stock_data(ticker, "6m")
+         else:
+            data = fetch_stock_data_set_dates(ticker, start, end)
+            
+        
 
          changes = []
 

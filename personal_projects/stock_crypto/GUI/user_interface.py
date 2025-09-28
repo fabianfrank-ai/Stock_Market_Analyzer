@@ -440,28 +440,33 @@ def tab_portfolio_calculator(portfolio_df):
 
 def tab_network_graph():
     '''Plot the networking graph'''
-
     
     if 'df_correlation' not in st.session_state:
         st.session_state.df_correlation = None
 
+    # display the network input and output in tab 5
     with tab5:
-        
+        col1, col2 = st.columns(2)
         st.write("Creates a Network Graph showing correlations between market movements of S&P 500 companies in the past 6 months")
         st.info("There's a bug going on in streamlit so the textboxes (and text) are displayed in white, which should not happen, I'm working to fix it. Thank you")
         threshold = st.slider("Threshold for the correlations", min_value = 0.3, max_value = 1.0, value = 0.7, help = "Bigger correlations usually mean companies are very connected. NOTE: Be aware that a low threshold might slow your PC!")
         
-        if st.button("Create a networking Graph"):
+        # give user the choice between new data or pre calculated data   
+        if st.button("Create a new networking Graph"):
 
-           with st.spinner("This will take a while...Please wait"):
-                if st.session_state.df_correlation is None: 
-                    st.session_state.df_correlation = correlations() 
+            with st.spinner("This will take a while...Please wait"):
+                    if st.session_state.df_correlation is None: 
+                        st.session_state.df_correlation = correlations(None, None) 
 
-                else: 
-                    pass
+                    else: 
+                        pass
 
-                fig3 = plot_network(st.session_state.df_correlation, threshold)
-                st.plotly_chart(fig3)
+                    fig3 = plot_network(st.session_state.df_correlation, threshold)
+                    st.plotly_chart(fig3)
+
+                
+            
+            
 
 
     

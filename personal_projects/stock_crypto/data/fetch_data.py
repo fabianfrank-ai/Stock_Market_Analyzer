@@ -19,3 +19,17 @@ def fetch_stock_data(ticker_symbol, period):
         return None
    
     
+
+def fetch_stock_data_set_dates(ticker_symbol, start,end):
+    
+    try:
+
+        ticker = yf.Ticker(ticker_symbol)
+        data = ticker.history(start = start, end = end)
+
+        return data
+    
+
+    except Exception as e:
+
+        return None

@@ -7,7 +7,6 @@ from GUI.user_interface import sidebar, user_input, user_portfolio, tab_stock_ch
 from core.prediction import prediction
 from data.sklearn_prediction import sklearn_prediction
 from core.portfolio import generate_portfolio
-from core.network_graphing import plot_network
 
 
 

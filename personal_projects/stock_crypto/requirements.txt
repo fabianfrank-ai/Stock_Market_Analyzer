@@ -8,3 +8,8 @@ scikit-learn
 networkx
 plotly
 python-louvain
+scipy
+
+
+pyarrow
+fastparquet

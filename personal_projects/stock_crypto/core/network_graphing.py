@@ -95,10 +95,9 @@ def plot_network(df_correlation, threshold):
     
 
     # create plotly figure
-    global fig
     fig = go.Figure()
 
-    clustering(G, pos)
+    clustering(G, pos, fig)
 
     # add edges
     fig.add_trace(go.Scatter(
@@ -173,9 +172,10 @@ def plot_network(df_correlation, threshold):
 
 
 
-def clustering(G, pos):
+def clustering(G, pos, fig):
     '''Cluster the data'''
-
+    # remove non-existing nodes and partition the existing ones
+    G.remove_nodes_from(list(nx.isolates(G)))
     partition = community_louvain.best_partition(G)
  
 
@@ -212,7 +212,7 @@ def clustering(G, pos):
    
 
 
-    return x_hull, y_hull, color
+    del G, x_hull, y_hull
 
 
 
