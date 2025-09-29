@@ -62,7 +62,7 @@ def market_screener():
 # I'm sure there is a better way to do this, but for now it works, open to suggestions
 
 
-def heatmap():
+def heatmap(start, end):
    """Generate a Dataframe of S&P 500 companies based on their gain/loss percentage over the last day."""
 
 
@@ -94,7 +94,10 @@ def heatmap():
       try:
          
          # fetch data
-         data = fetch_stock_data(ticker, "6mo")
+         if start and end is None:
+            data = fetch_stock_data(ticker, "6mo")
+         else:
+            data = fetch_stock_data(ticker, start = start, end = end)
 
          
          # check if data is valid

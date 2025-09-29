@@ -4,7 +4,7 @@ import pandas as pd
 import networkx as nx
 import plotly.graph_objects as go
 import numpy as np
-import community.community_louvain as community_louvain # suggestion by ChatGPT in a brainstorming session
+from networkx.algorithms import community as nx_comm # suggestion by ChatGPT in a brainstorming session
 from scipy.spatial import ConvexHull
 from core.market_screener import correlations
 import plotly.io as pio
@@ -27,6 +27,7 @@ def create_network(df_correlation, threshold):
             if abs(corr_value) >= threshold:
                 G.add_edge(nodes[i], nodes[j], weight = corr_value)
     
+    
     return G
 
 
@@ -34,6 +35,7 @@ def create_network(df_correlation, threshold):
 # threshold is chosen for best performance and visibility
 def plot_network(df_correlation, threshold):
     '''Plots the graph with plotly'''
+    
     G = create_network(df_correlation, threshold)
 
 
@@ -41,7 +43,7 @@ def plot_network(df_correlation, threshold):
 
 
     # use spring layout, most meaningful
-    pos = nx.spring_layout(G, k = 1, iterations = 50, seed = 42)
+    pos = nx.spring_layout(G, seed = 42, k = 6, method = "energy")
  
     
     # create lists for edges
@@ -75,7 +77,7 @@ def plot_network(df_correlation, threshold):
     
 
 
-    # aoppend with data from teh edges
+    # aoppend with data from teh nodes
     for node in G.nodes():
         x, y = pos[node]
         node_x.append(x)
@@ -93,11 +95,14 @@ def plot_network(df_correlation, threshold):
         # change colours based on amount of adjacencies
         node_colors.append(len(adjacencies))
     
-
+    print("Nodes:", G.number_of_nodes())
+    print("Edges:", G.number_of_edges())
+    
+    
     # create plotly figure
     fig = go.Figure()
-
     clustering(G, pos, fig)
+    
 
     # add edges
     fig.add_trace(go.Scatter(
@@ -105,8 +110,7 @@ def plot_network(df_correlation, threshold):
         line = dict(width = 1, color = '#8888aa'),
         hoverinfo = 'none',
         mode = 'lines',
-        name = 'Connections'
-    ))
+        name = 'Connections'))
 
 
     
@@ -127,12 +131,10 @@ def plot_network(df_correlation, threshold):
                 thickness = 15,
                 len = 0.5,
                 x = 1.1,
-                title = "Connections"
-            ),
+                title = "Connections"),
             line = dict(width = 2, color = 'white')
         ),
-        name = 'Stocks'
-    ))
+        name = 'Stocks'))
     
     
 
@@ -141,8 +143,7 @@ def plot_network(df_correlation, threshold):
     fig.update_layout(
         title = dict(       
             text = f'Stock Correlation Network (threshold: {threshold})',
-            font = dict(size = 16)
-        ),
+            font = dict(size = 16)),
         autosize = True,
         showlegend = False,
         hovermode = 'closest',
@@ -152,8 +153,7 @@ def plot_network(df_correlation, threshold):
             xref = "paper", yref = "paper",
             x = 0.005, y = -0.002,
             xanchor = 'left', yanchor = 'bottom',
-            font = dict(color = 'gray', size = 10)
-        )],
+            font = dict(color = 'gray', size = 10))],
         xaxis = dict(showgrid = False, zeroline = False, showticklabels = False),
         yaxis = dict(showgrid = False, zeroline = False, showticklabels = False),
         plot_bgcolor = 'black',
@@ -174,10 +174,14 @@ def plot_network(df_correlation, threshold):
 
 def clustering(G, pos, fig):
     '''Cluster the data'''
-    # remove non-existing nodes and partition the existing ones
-    G.remove_nodes_from(list(nx.isolates(G)))
-    partition = community_louvain.best_partition(G)
  
+    
+    # remove non-existing nodes and partition the existing ones (otherwise nx will literally scream at you in agony)
+    # replaced louvain with greedy modularity because louvain failed consistently (do not ask me why, I went through enough)
+    G_clean = G.copy() 
+    G_clean.remove_nodes_from(list(nx.isolates(G_clean)))
+    communities = nx_comm.greedy_modularity_communities(G_clean)
+    partition = {node: cid for cid, comm in enumerate(communities) for node in comm}
 
 
     # Group the clusters
@@ -212,7 +216,7 @@ def clustering(G, pos, fig):
    
 
 
-    del G, x_hull, y_hull
+  
 
 
 

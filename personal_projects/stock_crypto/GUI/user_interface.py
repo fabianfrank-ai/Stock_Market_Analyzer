@@ -111,9 +111,16 @@ def sidebar():
                     st.info('No Buy Opportunities Found at this time.')
        
         with st.sidebar.expander('How does the prediction work?'):
+            
             st.write('The prediction uses all of the indicators of the most recent data and calculates how the price could evolve based on them')
             st.write('Indicators are scaled and added together to form a weight which will be applied to the data')
             st.write('Since stocks are not purely statistical, the prediction is very likely to fail, however, a broad understanding of future developments can be made')
+            
+        with st.sidebar.expander("What is a networking graph and what does it display?"):
+            st.write("A networking graph displays the correlations between price movements of the S&P 500 Stocks")
+            st.write("If stocks have a high correlation (e.g. 0.8+) most of their trends allign. Meaning: they tend to react to the market in a similar way")
+            st.write("Typically you'll find certain industries in clusters, as banks, tech, energy or healthcare are often closely intertwined")
+            st.write("If you create a networking graph you'll probably see bank and loan organisations in the center with the most connections, due to the nature of their business")
         
         with st.sidebar.expander('Future Improvements'):
 
@@ -133,18 +140,26 @@ def user_input():
     '''Create user interface for user to chose his own data'''
     # create sliders for user input(time range and selected stock)
     # was not sure whether to include this in user_interface but it's here now for tidiness
-   
+    
     with tab1:
+        global tab_long, tab_short 
+        tab_long, tab_short = st.tabs(["Long term prices", "Short term prices"])
+        
+        with tab_long:
             period = st.slider('Select Period', min_value = 1, max_value = 20, value = 10, help='Select the number of years to fetch data for (1-20 years)')
             stock = st.text_input('Select Stock ticker (AMZN, MSFT, META)',  help='Select the stock symbol to fetch data for', value='AMZN')
             options = ['SMA', 'Bollinger Bands', 'EMA', 'MACD', 'RSI']
             selected_indicators = st.multiselect('Select Indicators to Display', options, default=['SMA', 'Bollinger Bands', 'RSI'])
+        with tab_short:
+            stock_short = st.text_input('Select Stock ticker (AMZN, MSFT, META)',  help='Select the stock symbol to fetch data for', value='AMZN' , key = "Input box for short term analysis")
+            options_pills =(["1d", "5d", "1mo", "3mo", "6mo", "1y"])
+            timeframe = st.pills(label = "Choose the timeframe you want to see", options = options_pills, default = "5d" )
     with tab3:
             period_prediction = st.slider('Select Period', min_value = 1, max_value = 20, value = 10, help =' Select the number of years to fetch data for (1-20 years)', key = "Slider Tab 3")
             predicted_time_frame = st.slider('Select the timeframe you want to predict', min_value = 5, max_value = 120, value = 60, help = 'Decides the length of the prediction. NOTE: Larger timeframes might be unrealistic') 
             stock_prediction = st.text_input('Select Stock ticker (AMZN, MSFT, META)',  help='Select the stock symbol to fetch data for', value='AMZN', key="Input tab 3")
     
-    return period, stock, period_prediction, stock_prediction, predicted_time_frame, selected_indicators
+    return period, stock, period_prediction, stock_prediction, predicted_time_frame, selected_indicators, timeframe, stock_short
 
 
 
@@ -182,12 +197,11 @@ def user_portfolio():
 def tab_stock_chart(stock , price_change , data , selected_indicators ,data_sma_30 , data_sma_100 , crossover_data_sma, crossover_type_sma,
                      upper_band, lower_band, ema_12, ema_26, crossover_data_ema, crossover_type_ema , macd_line, signal_line, rsi, verdict, atr):
     
+     """Use retreived data from main to create plots for the data and create heatmap if necessary"""
     
-    """Use retreived data from main to create plots for the data and create heatmap if necessary"""
-    with tab1:
-
-        fig ,(ax,ax2) = plt.subplots(2,1, figsize=(16,20), sharex=True)
-        fig.tight_layout(pad=5.0)
+     with tab_long:
+        fig_long_term ,(ax,ax2) = plt.subplots(2,1, figsize=(16,20), sharex=True)
+        fig_long_term.tight_layout(pad=5.0)
 
 
 
@@ -204,7 +218,7 @@ def tab_stock_chart(stock , price_change , data , selected_indicators ,data_sma_
 
         ## plot the data
         # check if the price change is positive or negative and change the background color accordingly
-        if price_change>0:
+        if price_change > 0:
 
             # dark green background for positive price change
             ax.set_facecolor('#003f3f')
@@ -311,8 +325,7 @@ def tab_stock_chart(stock , price_change , data , selected_indicators ,data_sma_
 
 
 
-
-        # Give the user feedback whether to buy,sell or hold a product
+    # Give the user feedback whether to buy,sell or hold a product
         if verdict == "Buy":
             st.success(f'Verdict: {verdict}. According to the indicators, it might be a good time to buy {stock}. Look at the sidebar for an explanation!')
         elif verdict == "Strong Buy":
@@ -343,7 +356,35 @@ def tab_stock_chart(stock , price_change , data , selected_indicators ,data_sma_
             else:
                 st.success(f'Risk (ATR): {atr:.2f}%. The stock seems not very volatile. Investing in it should be relatively safe.')
         
-        st.pyplot(fig)
+        st.pyplot(fig_long_term)
+        
+        
+
+def tab_short_term(data, stock):
+    '''Creates a tab with the most recent data plotted'''
+    
+    # basically same thing than the long term tab but short
+    with tab_short:
+        fig_short_term ,(ax) = plt.subplots(figsize=(16,8))
+    
+        today_data = data['Close'].iloc[-1]
+        beginning_data = data['Close'].iloc[0]
+
+
+        # name the axes and add a grid
+        ax.set_xlabel('Date')
+        ax.set_ylabel('Price (USD)') 
+        ax.grid()
+        #ax.set_title(f'{stock} Stock Price between {data.index[0].date()} and {data.index[-1].date()}')
+        
+        ax.plot(data.index, data['Close'], label =f'Movement of {stock} in a short frame', color = "#EA00FF")
+        
+        
+        st.pyplot(fig_short_term)
+    
+
+
+
 
 
 def tab_heatmap():
@@ -355,7 +396,8 @@ def tab_heatmap():
            
                 # create a dataframe(pandas) with the heatmap function initialized in the data folder
                 with st.spinner('Generating heatmap... This may take a moment.'):
-                        st.session_state.heatmap_data = heatmap()
+                    # input none none to not interfere with historical data
+                        st.session_state.heatmap_data = heatmap(None, None)
 
                 st.write('S&P 500 Daily Change Percentage:')
 
@@ -417,11 +459,17 @@ def tab_prediction(data_pred, data, sk_data_x, sk_data_y, timeframe):
 
 def tab_portfolio_calculator(portfolio_df):
     """Plotting of the portfolio calculator based with the input by a user"""
+    portfolio_csv = portfolio_df.to_csv(index = False).encode('utf-8')
+    
     with tab4:
         # visualize the dataframe and heatmap of the portfolio
         st.dataframe(portfolio_df.style.map(color_code, subset=['Change%']))
+        st.download_button(label= "Download your portfolio as csv", data = portfolio_csv, file_name = "Portfolio.csv", mime = "text/csv")
+        
+        
 
         heatmap_portf = heatmap_portfolio(portfolio_df)
+        heatmap_portf_csv = heatmap_portf.to_csv(index = False).encode('utf-8')
 
         st.dataframe(heatmap_portf.style
                             .map(color_code, subset=['Change'])
@@ -432,6 +480,10 @@ def tab_portfolio_calculator(portfolio_df):
                             .map(ema_color, subset=['EMA Diff'])
                             .map(macd_color, subset=['MACD Diff'])
                             .map(atr_color, subset=['Risk']))
+        
+        
+        st.download_button(label= "Download your heatmap as csv", data = heatmap_portf_csv, file_name = 'Portfolio heatmap.csv', mime = "text/csv")
+        
 
         st.info ("Note that you can only add one stock of each kind")
             
@@ -446,11 +498,13 @@ def tab_network_graph():
 
     # display the network input and output in tab 5
     with tab5:
-        col1, col2 = st.columns(2)
+        
         st.write("Creates a Network Graph showing correlations between market movements of S&P 500 companies in the past 6 months")
         st.info("There's a bug going on in streamlit so the textboxes (and text) are displayed in white, which should not happen, I'm working to fix it. Thank you")
         threshold = st.slider("Threshold for the correlations", min_value = 0.3, max_value = 1.0, value = 0.7, help = "Bigger correlations usually mean companies are very connected. NOTE: Be aware that a low threshold might slow your PC!")
         
+        
+       
         # give user the choice between new data or pre calculated data   
         if st.button("Create a new networking Graph"):
 
@@ -461,8 +515,8 @@ def tab_network_graph():
                     else: 
                         pass
 
-                    fig3 = plot_network(st.session_state.df_correlation, threshold)
-                    st.plotly_chart(fig3)
+                    fig_network = plot_network(st.session_state.df_correlation, threshold)
+                    st.plotly_chart(fig_network)
 
                 
             

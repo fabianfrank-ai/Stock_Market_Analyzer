@@ -17,7 +17,7 @@ def get_month_end(year, month):
     return date(year, month, day)
 
 
-def dataframe_to_csv_parquet():
+def dataframe_to_csv_parquet_network():
     '''Converts pandas dataframes into csv and parquet data'''
     year = 2020
     quarter = 1
@@ -46,29 +46,88 @@ def dataframe_to_csv_parquet():
         if quarter > 4:
             quarter = 1
             year += 1
-#dataframe_to_csv_parquet()
+#dataframe_to_csv_parquet_network()
 
+
+
+def dataframe_to_csv_parquet_heatmap():
+    '''Converts pandas dataframes into csv and parquet data'''
+    year = 2020
+    quarter = 1
+    while year < 2026:
+        # calculation for start quartal
+        month_start = 1 + (quarter - 1) * 3
+
+        # calculate the start and end date of a quartal
+        start_date = date(year, month_start, 1)
+        end_date = get_month_end(year, month_start + 2) 
+
+        # calculate heatmaps
+        heatmap_dataframe = correlations(start_date, end_date)
+        
+        heatmap_dataframe.fillna(0)
+        heatmap_dataframe.clip(-1,1)
+
+        # save data as parquet(fast for code) and readable csv(if desired)
+        heatmap_dataframe.to_parquet(f"personal_projects/stock_crypto/data_saved/heatmap_parquet/Heatmap_{quarter}_{year}.parquet")
+        
+
+        # increase quartal
+        quarter += 1
+        if quarter > 4:
+            quarter = 1
+            year += 1
+
+
+
+
+
+
+# lots of debugging because it is very unstable
 def parquet_to_html():
+    '''Convert dataframes, saved as parquet into html plots'''
     for file in Path("personal_projects/stock_crypto/data_saved/correlation_parquet").glob("*.parquet"):
         print(f"Starting with {file.stem}")
-        df = pd.read_parquet(file)
+        df = pd.read_parquet(file).copy()
         
-        df.fillna(0)
         df.clip(-1,1)
+        fig = {}
+        
 
         try: 
             fig = plot_network(df, 0.7)
+         
+        
 
-                
-            
+            print(f"Figure has {len(fig.data)} traces and {len(fig.layout.shapes)} shapes BEFORE write_html")   
+
             output_path = Path("personal_projects/stock_crypto/data_saved/correlation_html") / f"{file.stem}.html"
-            fig.write_html(output_path)
+            fig.write_html(output_path, full_html = True, include_plotlyjs = True)
+            
+            print(f"Plot has {len(fig.data)} traces and {len(fig.layout.shapes)} shapes AFTER write_html")
+            print([trace.name for trace in fig.data])
+            print(fig.layout.shapes)
+            fig.layout.shapes = ()
+            
+            
             print(f"{file.stem} has been added successfully")
-            del df, fig
+         
         except Exception as e:
-            print(f'{file.stem} could not be added, please check')
+            print(f'{file.stem} could not be added, please check : {e}')
             print(df.isna().sum().sum())
             print(df.min().min(), df.max().max())
-            del df
+      
         
-parquet_to_html()
+#parquet_to_html()
+
+
+choice = input("What do you want to convert?\n -1 correlations \n -2 heatmaps \n -3 parquet")
+
+if choice == '1':
+    dataframe_to_csv_parquet_network()
+elif choice == '2':
+    dataframe_to_csv_parquet_heatmap()
+elif choice == '3':
+    parquet_to_html()
+else:
+    print ("Invalid input, try again")

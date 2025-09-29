@@ -3,7 +3,7 @@ import pandas as pd
 from data.fetch_data import fetch_stock_data
 from core.indicators import sma,  bollinger_bands, rsi, price_change, ema, macd , moving_average_crossover, atr
 from core.verdict import generate_verdict
-from GUI.user_interface import sidebar, user_input, user_portfolio, tab_stock_chart, header, tab_init, tab_heatmap, tab_portfolio_calculator, tab_prediction, tab_network_graph
+from GUI.user_interface import sidebar, user_input, user_portfolio, tab_stock_chart, header, tab_init, tab_heatmap, tab_portfolio_calculator, tab_prediction, tab_network_graph, tab_short_term
 from core.prediction import prediction
 from data.sklearn_prediction import sklearn_prediction
 from core.portfolio import generate_portfolio
@@ -38,7 +38,7 @@ sidebar()
 
 # use sliders function to get user input
 
-period, stock, period_prediction, stock_prediction, predicted_time_frame, selected_indicators = user_input()
+period, stock, period_prediction, stock_prediction, predicted_time_frame, selected_indicators, timeframe_short, stock_short = user_input()
 
 try:
     st.session_state.bought_stocks, st.session_state.buy_in_price, st.session_state.amount_bought = user_portfolio()
@@ -55,6 +55,7 @@ except Exception as e:
 # fetch the stock data
 data = fetch_stock_data(stock, f'{period}y')
 data_prediction_now = fetch_stock_data(stock_prediction, f'{period_prediction}y')
+data_short_term = fetch_stock_data(stock_short, f'{timeframe_short}')
 
 
 
@@ -108,7 +109,9 @@ data_pred_future = prediction(data_prediction_now, predicted_time_frame)
 tab_stock_chart(stock, price_change, data, selected_indicators, data_sma_30, data_sma_100, crossover_data_sma, crossover_type_sma,
                     upper_band, lower_band, ema_12, ema_26, crossover_data_ema, crossover_type_ema, macd_line, signal_line, rsi,
                       verdict, atr)
-
+tab_short_term(data_short_term, stock_short)
+    
+    
 tab_heatmap()
 
 tab_prediction(data_pred_future, data_prediction_now, X_prediction_sk, Y_prediction_sk, predicted_time_frame)
