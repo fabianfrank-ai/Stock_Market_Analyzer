@@ -131,7 +131,7 @@ def atr(data, window=14):
 
     atr = true_range.rolling(window = window).mean()
 
-    # scale atr to be between 0 and 100
+    # scale atr to be between 0 and 100 : easier to understand percentages
     atr_scaled = (atr / atr.max())  * 100
     
     return atr_scaled.iloc[-1]

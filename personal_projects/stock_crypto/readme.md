@@ -17,17 +17,12 @@ The core folder contains the core functionalities and juggling with data. The fe
 
 As the project thrives to be user-friendly there is also a seperate GUI folder for the Streamlit GUI. It was previously cramped in the main file but the seperate just keeps the code readable and somewhat tidy. Most of it is just plotting and writing so nothing too complex there
 
+The data_saved data is a database consisting of html, csv and parquet files. As of now they do not get used, however changes are staged in order to be able to browse quickly through selected historical data. The conversion machine has been specifically added to this and it will be extended in the future to guarantee the best possible analytic capabilities.
+
 
 ## Future ideas: 
 
-- Add more companies (e.g. DAX or NASDAQ) into the heatmap and make it more interactive
+- I really like the Idea of animating historical records
+- More features in the portfolio tab
+- quicker refresh speeds
 
-- Make Heatmap not disappear with every refresh. Maybe also implement a Heatmap timeline where the user can browse through the dates. Could be done with SQL
-
-- Add a "News Tab" showing general news for stocks but also specific ones depending on the stock the user chooses
-
-- Forgot to add sliders and textbox to the prediction tab, probably the next addition
-
-- Portfolio calculator linked with user registration and maybe some kind of newsletter
-
-- Implement sklearn

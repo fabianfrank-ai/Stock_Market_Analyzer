@@ -2,16 +2,16 @@
 # Don't want to clutter up main.py with UI code
 
 
-# Don't really know if I'll actually do this, but it's a nice idea, though time-consuming
-
-# I did it and it feels like it's overcomplicating things , might revert
-
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+from pathlib import Path
+import plotly.io as pio
+
 from core.market_screener import heatmap, market_screener, heatmap_portfolio, correlations
 from GUI.colour_coding import color_code, verdict_color, rsi_color, ema_color, macd_color, sma_color, bollinger_color, atr_color
 from core.network_graphing import plot_network
+
 
 
 
@@ -30,9 +30,8 @@ def tab_init():
 
 def header():
     '''Create a header for the entire web page and change color theme'''
-    # might seem unnecessary but i prefer main to be cleaner
-
-    # change the style of the plot to dark mode (Hex colors used from ChatGPT, I don't like the default dark mode by matplotlib)
+    
+    # change the style of the plot to dark mode (Hex colors used from ChatGPT, (I don't like the default dark mode by matplotlib)
     plt.rcParams.update({
         "figure.facecolor": "#2e2e2e",  
         "axes.facecolor":   "#2e2e2e",
@@ -150,10 +149,12 @@ def user_input():
             stock = st.text_input('Select Stock ticker (AMZN, MSFT, META)',  help='Select the stock symbol to fetch data for', value='AMZN')
             options = ['SMA', 'Bollinger Bands', 'EMA', 'MACD', 'RSI']
             selected_indicators = st.multiselect('Select Indicators to Display', options, default=['SMA', 'Bollinger Bands', 'RSI'])
+            
         with tab_short:
             stock_short = st.text_input('Select Stock ticker (AMZN, MSFT, META)',  help='Select the stock symbol to fetch data for', value='AMZN' , key = "Input box for short term analysis")
-            options_pills =(["1d", "5d", "1mo", "3mo", "6mo", "1y"])
-            timeframe = st.pills(label = "Choose the timeframe you want to see", options = options_pills, default = "5d" )
+            options_pills =(["1d", "2d", "3d", "4d", "5d", "6d", '7d'])
+            timeframe = st.pills(label = "Choose the timeframe you want to see", options = options_pills, default = "7d" )
+            
     with tab3:
             period_prediction = st.slider('Select Period', min_value = 1, max_value = 20, value = 10, help =' Select the number of years to fetch data for (1-20 years)', key = "Slider Tab 3")
             predicted_time_frame = st.slider('Select the timeframe you want to predict', min_value = 5, max_value = 120, value = 60, help = 'Decides the length of the prediction. NOTE: Larger timeframes might be unrealistic') 
@@ -362,15 +363,17 @@ def tab_stock_chart(stock , price_change , data , selected_indicators ,data_sma_
 
 def tab_short_term(data, stock):
     '''Creates a tab with the most recent data plotted'''
+    today_data = data['Close'].iloc[-1]
+    today_data = round(today_data, 2)
+    beginning_data = data['Close'].iloc[0]
+    beginning_data = round(beginning_data, 2)
     
     # basically same thing than the long term tab but short
     with tab_short:
+        st.write(f"{stock} : {today_data}$")
         fig_short_term ,(ax) = plt.subplots(figsize=(16,8))
     
-        today_data = data['Close'].iloc[-1]
-        beginning_data = data['Close'].iloc[0]
-
-
+       
         # name the axes and add a grid
         ax.set_xlabel('Date')
         ax.set_ylabel('Price (USD)') 
@@ -389,36 +392,54 @@ def tab_short_term(data, stock):
 
 def tab_heatmap():
     '''Create a heatmap and display it as streamlit dataframe'''
-
-    with tab2:
-        # only create heatmap if it's not been created yet
-        if st.button("Create Heatmap"):
-           
-                # create a dataframe(pandas) with the heatmap function initialized in the data folder
-                with st.spinner('Generating heatmap... This may take a moment.'):
-                    # input none none to not interfere with historical data
-                        st.session_state.heatmap_data = heatmap(None, None)
-
-                st.write('S&P 500 Daily Change Percentage:')
-
+    if 'heatmap_data' not in st.session_state:
+        st.session_state.heatmap_data = None
     
+    tab_quarters = []
+    with tab2:
+        col1, col2 = st.columns(2)
+        with col1:
+            # only create heatmap if it's not been created yet....
+            if st.button("Create Heatmap"):
+            
+                    # create a dataframe(pandas) with the heatmap function initialized in the data folder
+                    with st.spinner('Generating heatmap... This may take a moment.'):
+                        # input none none to not interfere with historical data
+                            st.session_state.heatmap_data = heatmap(None, None)
 
-                st.dataframe(st.session_state.heatmap_data.style
-                                .map(color_code, subset=['Change'])
-                                .map(verdict_color, subset=['Verdict'])
-                                .map(sma_color, subset=['SMA Diff'])
-                                .map(rsi_color, subset=['RSI'])
-                                .map(bollinger_color, subset=['Bollinger %']) 
-                                .map(ema_color, subset=['EMA Diff'])
-                                .map(macd_color, subset=['MACD Diff'])
-                                .map(atr_color, subset=['Risk']))
-                
+                    st.write('S&P 500 Daily Change Percentage:')
 
-                heatmap_csv = st.session_state.heatmap_data.to_csv(index = False).encode('utf-8')
-                st.download_button(label = "Export Heatmap as CSV", data = heatmap_csv, file_name = "Heatmap.csv", mime = "text/csv")
+                    
+
+                    heatmap_csv = st.session_state.heatmap_data.to_csv(index = False).encode('utf-8')
+                    st.download_button(label = "Export Heatmap as CSV", data = heatmap_csv, file_name = "Heatmap.csv", mime = "text/csv")
+        #... or choose from a historical option
+        with col2:
+            # get pre calculated files from the folder and sort them
+             for file in Path("personal_projects/stock_crypto/data_saved/heatmap_parquet").glob("*.parquet"):
+                 
+                 tab_quarters.append(f'{file.stem}')
+                 
+             tab_quarters.sort()
+             quarter_choice = st.select_slider(label = "Select a quarter to display the heatmap from", options = tab_quarters)
+             
+             if st.button("Go"):
+                 st.session_state.heatmap_data = pd.read_parquet(f'personal_projects/stock_crypto/data_saved/heatmap_parquet/{quarter_choice}.parquet').copy()
+         
+        if st.session_state.heatmap_data is not None:        
+            st.dataframe(st.session_state.heatmap_data.style
+                        .map(color_code, subset=['Change'])
+                        .map(verdict_color, subset=['Verdict'])
+                        .map(sma_color, subset=['SMA Diff'])
+                        .map(rsi_color, subset=['RSI'])
+                        .map(bollinger_color, subset=['Bollinger %']) 
+                        .map(ema_color, subset=['EMA Diff'])
+                        .map(macd_color, subset=['MACD Diff'])
+                        .map(atr_color, subset=['Risk']))
+        st.info("Note: Historical data can't display the sma difference due to it's short timeframe. It also tends to be more passive because of it.")
+                    
 
          
-
 
 
 
@@ -428,7 +449,8 @@ def tab_prediction(data_pred, data, sk_data_x, sk_data_y, timeframe):
 
 
     with tab3:
-        fig2, ax = plt.subplots(figsize = (16,8))
+        
+        fig_prediction, ax = plt.subplots(figsize = (16,8))
         
         ax.set_xlabel('Date')
         ax.set_ylabel('Price (USD)') 
@@ -450,7 +472,7 @@ def tab_prediction(data_pred, data, sk_data_x, sk_data_y, timeframe):
 
         
         
-        st.pyplot(fig2)
+        st.pyplot(fig_prediction)
 
 
 
@@ -492,23 +514,27 @@ def tab_portfolio_calculator(portfolio_df):
 
 def tab_network_graph():
     '''Plot the networking graph'''
-    
+    network_quarter_options = []
+    fig_network = None
+    # just enable session state so it doesn't have to create all the data with each refresh
     if 'df_correlation' not in st.session_state:
         st.session_state.df_correlation = None
 
     # display the network input and output in tab 5
     with tab5:
-        
+        tab_current_adjustable, tab_historical_data = st.tabs(["Show the current network", "Show historical networks"])
         st.write("Creates a Network Graph showing correlations between market movements of S&P 500 companies in the past 6 months")
-        st.info("There's a bug going on in streamlit so the textboxes (and text) are displayed in white, which should not happen, I'm working to fix it. Thank you")
-        threshold = st.slider("Threshold for the correlations", min_value = 0.3, max_value = 1.0, value = 0.7, help = "Bigger correlations usually mean companies are very connected. NOTE: Be aware that a low threshold might slow your PC!")
         
+        # 2 tabs within a tab to distplay a current network and historical records of networks
+        with tab_current_adjustable:
+            threshold = st.slider("Threshold for the correlations", min_value = 0.3, max_value = 1.0, value = 0.7, help = "Bigger correlations usually mean companies are very connected. NOTE: Be aware that a low threshold might slow your PC!")
+            
+            
         
-       
-        # give user the choice between new data or pre calculated data   
-        if st.button("Create a new networking Graph"):
+            # give user the choice between new data or pre calculated data   
+            if st.button("Create a new networking Graph"):
 
-            with st.spinner("This will take a while...Please wait"):
+                with st.spinner("This will take a while...Please wait"):
                     if st.session_state.df_correlation is None: 
                         st.session_state.df_correlation = correlations(None, None) 
 
@@ -516,7 +542,22 @@ def tab_network_graph():
                         pass
 
                     fig_network = plot_network(st.session_state.df_correlation, threshold)
-                    st.plotly_chart(fig_network)
+                    
+                    
+        with tab_historical_data:
+            # create an option for every entry in the folder and create a select slider, then read json file
+            for file in Path("personal_projects/stock_crypto/data_saved/correlation_json").glob("*.json"):
+                 
+                 network_quarter_options.append(f'{file.stem}')
+                 
+            network_quarter_options.sort()
+            network_quarter_choice = st.select_slider(label = "Select a quarter to display the network graph from", options = network_quarter_options)
+            if st.button("Go", key = "Network go button"):
+                fig_network = pio.read_json(f"personal_projects/stock_crypto/data_saved/correlation_json/{network_quarter_choice}.json")
+        
+        if fig_network is not None:
+            st.plotly_chart(fig_network)  
+        st.info("Please note that with historical data a threshold of 0.7 is pre-set for now. Might be customizable in the future") 
 
                 
             

@@ -30,7 +30,7 @@ def generate_portfolio(ticker, amount, buy_in):
 
 
             # get the most recent price as list (for the index) and as float (as output)
-            current_price_index = fetch_stock_data(ticker, '1d')
+            current_price_index = fetch_stock_data(ticker, '1d', '1d')
 
 
             # calculate indicators and round if necessary

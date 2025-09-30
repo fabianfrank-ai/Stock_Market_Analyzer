@@ -8,10 +8,8 @@ from core.indicators import sma, bollinger_bands, rsi, ema, macd , atr
 from core.verdict import generate_verdict
 
 
-def market_screener():
-   """Screen the market for potential buy opportunities in S&P 500 companies."""
-
-   
+def get_tickers():
+    
    # Get the list of S&P 500 companies from Wikipedia
    url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -21,17 +19,24 @@ def market_screener():
 
    # filter all the tickers from the table on wikipedia
    sp500_tickers = tables[0]['Symbol'].tolist()
+   
+   return sp500_tickers  
 
 
-   # for every ticker in sp500
+
+
+def market_screener():
+   """Screen the market for potential buy opportunities in S&P 500 companies."""
+
+   
+   sp500_tickers = get_tickers()
+
    for ticker in sp500_tickers:
-
-
       # try, in order to prevent false tickers in eg wikipedia or conversion errors
       try:
 
          # fetch data, create smas, bollinger bands and rsi for every ticker
-         data = fetch_stock_data(ticker, "5mo")
+         data = fetch_stock_data(ticker, "5mo", '1d')
          sma_30 = sma(data, 30)
          sma_100 = sma(data, 100)
          lower_band, upper_band = bollinger_bands(data, 30)
@@ -44,6 +49,8 @@ def market_screener():
 
          # save the tickers with a buy verdict 
          if verdict == "Strong Buy" :
+            return ticker, verdict
+         elif verdict == "Buy":
             return ticker, verdict
          else:
             pass  # No action for "Sell" or "Hold"
@@ -60,20 +67,11 @@ def market_screener():
 
 
 # I'm sure there is a better way to do this, but for now it works, open to suggestions
+# I'm working to create a quicker way
 
 
 def heatmap(start, end):
    """Generate a Dataframe of S&P 500 companies based on their gain/loss percentage over the last day."""
-
-
-   # Get the list of S&P 500 companies from Wikipedia
-   url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
-   req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-   html = urllib.request.urlopen(req).read()
-   tables = pd.read_html(html)
-   
-
-   # create empty lists to store the data, lists are then used to create a dataframe at the end
    ticker_data = []
    change_data = []
    verdict=[]
@@ -84,9 +82,7 @@ def heatmap(start, end):
    macd_data = []
    atr_data = []
 
-
-   # filter all the tickers from the table on wikipedia
-   sp500_tickers = tables[0]['Symbol'].tolist()
+   sp500_tickers = get_tickers()
 
 
    # for every ticker in sp500
@@ -95,9 +91,9 @@ def heatmap(start, end):
          
          # fetch data
          if start and end is None:
-            data = fetch_stock_data(ticker, "6mo")
+            data = fetch_stock_data(ticker, "6mo", '1d')
          else:
-            data = fetch_stock_data(ticker, start = start, end = end)
+            data = fetch_stock_data_set_dates(ticker, start = start, end = end)
 
          
          # check if data is valid
@@ -198,7 +194,7 @@ def heatmap_portfolio(portfolio):
       try:
          
          # fetch data
-         data = fetch_stock_data(ticker, "6mo")
+         data = fetch_stock_data(ticker, "6mo", '1d')
 
          
          # check if data is valid
@@ -275,13 +271,7 @@ def correlations(start, end):
    '''Calculates the correlations of the S&P 500 stock movements within the past 6 months'''
    
    
-   url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
-   req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-   html = urllib.request.urlopen(req).read()
-   tables = pd.read_html(html)
- 
-   # filter all the tickers from the table on wikipedia
-   sp500_tickers = tables[0]['Symbol'].tolist()
+   sp500_tickers = get_tickers()
    data_dictionary = {}
 
    # for every ticker in sp500
@@ -290,7 +280,7 @@ def correlations(start, end):
          
          # fetch data
          if start and end is None: 
-             data = fetch_stock_data(ticker, "6m")
+             data = fetch_stock_data(ticker, "6m", '1d')
          else:
             data = fetch_stock_data_set_dates(ticker, start, end)
             

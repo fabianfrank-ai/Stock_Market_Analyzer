@@ -160,8 +160,8 @@ def plot_network(df_correlation, threshold):
         paper_bgcolor='black',
         font_color='white',
         hoverlabel=dict(
-        bgcolor="black",
-        font_color="white"))
+        bgcolor="white",
+        font_color="black"))
     
 
 

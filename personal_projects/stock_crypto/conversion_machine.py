@@ -5,9 +5,10 @@ from datetime import date
 import pandas as pd 
 from calendar import monthrange
 from pathlib import Path
+import plotly as pt
 
 
-from core.market_screener import correlations
+from core.market_screener import correlations, heatmap
 from core.network_graphing import plot_network
 
 
@@ -36,9 +37,9 @@ def dataframe_to_csv_parquet_network():
         correlation_dataframe.clip(-1,1)
 
         # save data as parquet(fast for code) and readable csv(if desired)
-        correlation_dataframe.to_parquet(f"personal_projects/stock_crypto/data_saved/correlation_parquet/Q{quarter}_{year}_correlations.parquet")
+        correlation_dataframe.to_parquet(f"personal_projects/stock_crypto/data_saved/correlation_parquet/Correlations_{year}_Q{quarter}.parquet")
         print(f'Parquet file for {quarter}, {year} has been saved successfully')
-        correlation_dataframe.to_csv(f"personal_projects/stock_crypto/data_saved/correlation_csv/Q{quarter}_{year}_correlations.csv")
+        correlation_dataframe.to_csv(f"personal_projects/stock_crypto/data_saved/correlation_csv/Correlations_{year}_Q{quarter}.csv")
         print(f'CSV file for {quarter}, {year} has been crteated successfully')
 
         # increase quartal
@@ -46,7 +47,6 @@ def dataframe_to_csv_parquet_network():
         if quarter > 4:
             quarter = 1
             year += 1
-#dataframe_to_csv_parquet_network()
 
 
 
@@ -63,13 +63,11 @@ def dataframe_to_csv_parquet_heatmap():
         end_date = get_month_end(year, month_start + 2) 
 
         # calculate heatmaps
-        heatmap_dataframe = correlations(start_date, end_date)
+        heatmap_dataframe = heatmap(start_date, end_date)
         
-        heatmap_dataframe.fillna(0)
-        heatmap_dataframe.clip(-1,1)
 
         # save data as parquet(fast for code) and readable csv(if desired)
-        heatmap_dataframe.to_parquet(f"personal_projects/stock_crypto/data_saved/heatmap_parquet/Heatmap_{quarter}_{year}.parquet")
+        heatmap_dataframe.to_parquet(f"personal_projects/stock_crypto/data_saved/heatmap_parquet/Heatmap_{year}_Q{quarter}.parquet")
         
 
         # increase quartal
@@ -83,9 +81,10 @@ def dataframe_to_csv_parquet_heatmap():
 
 
 
-# lots of debugging because it is very unstable
-def parquet_to_html():
-    '''Convert dataframes, saved as parquet into html plots'''
+# lots of debugging because it is(was) very unstable
+def parquet_to_json():
+    '''Convert dataframes, saved as parquet into json plots'''
+    # apparently plotly can't open their own html files but only json files 
     for file in Path("personal_projects/stock_crypto/data_saved/correlation_parquet").glob("*.parquet"):
         print(f"Starting with {file.stem}")
         df = pd.read_parquet(file).copy()
@@ -101,8 +100,8 @@ def parquet_to_html():
 
             print(f"Figure has {len(fig.data)} traces and {len(fig.layout.shapes)} shapes BEFORE write_html")   
 
-            output_path = Path("personal_projects/stock_crypto/data_saved/correlation_html") / f"{file.stem}.html"
-            fig.write_html(output_path, full_html = True, include_plotlyjs = True)
+            output_path = Path("personal_projects/stock_crypto/data_saved/correlation_json") / f"{file.stem}.json"
+            pt.io.write_json(fig, output_path)
             
             print(f"Plot has {len(fig.data)} traces and {len(fig.layout.shapes)} shapes AFTER write_html")
             print([trace.name for trace in fig.data])
@@ -121,13 +120,13 @@ def parquet_to_html():
 #parquet_to_html()
 
 
-choice = input("What do you want to convert?\n -1 correlations \n -2 heatmaps \n -3 parquet")
+choice = input("What do you want to convert?\n -1 correlations \n -2 heatmaps \n -3 parquet \n")
 
 if choice == '1':
     dataframe_to_csv_parquet_network()
 elif choice == '2':
     dataframe_to_csv_parquet_heatmap()
 elif choice == '3':
-    parquet_to_html()
+    parquet_to_json()
 else:
     print ("Invalid input, try again")

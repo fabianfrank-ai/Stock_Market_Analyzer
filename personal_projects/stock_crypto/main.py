@@ -25,7 +25,7 @@ if 'amount_bought' not in st.session_state:
 if 'portfolio_df' not in st.session_state:
     st.session_state.portfolio_df = None
 
-
+## get data from the user
 
 # create Title and color theme for the web app
 header()
@@ -49,13 +49,13 @@ except Exception as e:
 
 
 
-
+## use data from the user, do the math
 
 
 # fetch the stock data
-data = fetch_stock_data(stock, f'{period}y')
-data_prediction_now = fetch_stock_data(stock_prediction, f'{period_prediction}y')
-data_short_term = fetch_stock_data(stock_short, f'{timeframe_short}')
+data = fetch_stock_data(stock, f'{period}y', '1d')
+data_prediction_now = fetch_stock_data(stock_prediction, f'{period_prediction}y', '1d')
+data_short_term = fetch_stock_data(stock_short, f'{timeframe_short}', '1m')
 
 
 
@@ -106,6 +106,8 @@ atr = atr(data)
 
 data_pred_future = prediction(data_prediction_now, predicted_time_frame)
 
+
+## give all the data to the UI
 tab_stock_chart(stock, price_change, data, selected_indicators, data_sma_30, data_sma_100, crossover_data_sma, crossover_type_sma,
                     upper_band, lower_band, ema_12, ema_26, crossover_data_ema, crossover_type_ema, macd_line, signal_line, rsi,
                       verdict, atr)
