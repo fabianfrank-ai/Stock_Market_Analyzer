@@ -2,7 +2,7 @@
 
 
 from datetime import date
-import pandas as pd 
+import pandas as pd
 from calendar import monthrange
 from pathlib import Path
 import plotly as pt
@@ -10,7 +10,6 @@ import plotly as pt
 
 from core.market_screener import correlations, heatmap
 from core.network_graphing import plot_network
-
 
 
 def get_month_end(year, month):
@@ -28,18 +27,21 @@ def dataframe_to_csv_parquet_network():
 
         # calculate the start and end date of a quartal
         start_date = date(year, month_start, 1)
-        end_date = get_month_end(year, month_start + 2) 
+        end_date = get_month_end(year, month_start + 2)
 
         # calculate correlations
         correlation_dataframe = correlations(start_date, end_date)
-        
+
         correlation_dataframe.fillna(0)
-        correlation_dataframe.clip(-1,1)
+        correlation_dataframe.clip(-1, 1)
 
         # save data as parquet(fast for code) and readable csv(if desired)
-        correlation_dataframe.to_parquet(f"personal_projects/stock_crypto/data_saved/correlation_parquet/Correlations_{year}_Q{quarter}.parquet")
-        print(f'Parquet file for {quarter}, {year} has been saved successfully')
-        correlation_dataframe.to_csv(f"personal_projects/stock_crypto/data_saved/correlation_csv/Correlations_{year}_Q{quarter}.csv")
+        correlation_dataframe.to_parquet(
+            f"personal_projects/stock_crypto/data_saved/correlation_parquet/Correlations_{year}_Q{quarter}.parquet")
+        print(
+            f'Parquet file for {quarter}, {year} has been saved successfully')
+        correlation_dataframe.to_csv(
+            f"personal_projects/stock_crypto/data_saved/correlation_csv/Correlations_{year}_Q{quarter}.csv")
         print(f'CSV file for {quarter}, {year} has been crteated successfully')
 
         # increase quartal
@@ -47,7 +49,6 @@ def dataframe_to_csv_parquet_network():
         if quarter > 4:
             quarter = 1
             year += 1
-
 
 
 def dataframe_to_csv_parquet_heatmap():
@@ -60,15 +61,14 @@ def dataframe_to_csv_parquet_heatmap():
 
         # calculate the start and end date of a quartal
         start_date = date(year, month_start, 1)
-        end_date = get_month_end(year, month_start + 2) 
+        end_date = get_month_end(year, month_start + 2)
 
         # calculate heatmaps
         heatmap_dataframe = heatmap(start_date, end_date)
-        
 
         # save data as parquet(fast for code) and readable csv(if desired)
-        heatmap_dataframe.to_parquet(f"personal_projects/stock_crypto/data_saved/heatmap_parquet/Heatmap_{year}_Q{quarter}.parquet")
-        
+        heatmap_dataframe.to_parquet(
+            f"personal_projects/stock_crypto/data_saved/heatmap_parquet/Heatmap_{year}_Q{quarter}.parquet")
 
         # increase quartal
         quarter += 1
@@ -77,50 +77,46 @@ def dataframe_to_csv_parquet_heatmap():
             year += 1
 
 
-
-
-
-
 # lots of debugging because it is(was) very unstable
 def parquet_to_json():
     '''Convert dataframes, saved as parquet into json plots'''
-    # apparently plotly can't open their own html files but only json files 
+    # apparently plotly can't open their own html files but only json files
     for file in Path("personal_projects/stock_crypto/data_saved/correlation_parquet").glob("*.parquet"):
         print(f"Starting with {file.stem}")
         df = pd.read_parquet(file).copy()
-        
-        df.clip(-1,1)
+
+        df.clip(-1, 1)
         fig = {}
-        
 
-        try: 
+        try:
             fig = plot_network(df, 0.7)
-         
-        
 
-            print(f"Figure has {len(fig.data)} traces and {len(fig.layout.shapes)} shapes BEFORE write_html")   
+            print(
+                f"Figure has {len(fig.data)} traces and {len(fig.layout.shapes)} shapes BEFORE write_html")
 
-            output_path = Path("personal_projects/stock_crypto/data_saved/correlation_json") / f"{file.stem}.json"
+            output_path = Path(
+                "personal_projects/stock_crypto/data_saved/correlation_json") / f"{file.stem}.json"
             pt.io.write_json(fig, output_path)
-            
-            print(f"Plot has {len(fig.data)} traces and {len(fig.layout.shapes)} shapes AFTER write_html")
+
+            print(
+                f"Plot has {len(fig.data)} traces and {len(fig.layout.shapes)} shapes AFTER write_html")
             print([trace.name for trace in fig.data])
             print(fig.layout.shapes)
             fig.layout.shapes = ()
-            
-            
+
             print(f"{file.stem} has been added successfully")
-         
+
         except Exception as e:
             print(f'{file.stem} could not be added, please check : {e}')
             print(df.isna().sum().sum())
             print(df.min().min(), df.max().max())
-      
-        
-#parquet_to_html()
 
 
-choice = input("What do you want to convert?\n -1 correlations \n -2 heatmaps \n -3 parquet \n")
+# parquet_to_html()
+
+
+choice = input(
+    "What do you want to convert?\n -1 correlations \n -2 heatmaps \n -3 parquet \n")
 
 if choice == '1':
     dataframe_to_csv_parquet_network()
@@ -129,4 +125,4 @@ elif choice == '2':
 elif choice == '3':
     parquet_to_json()
 else:
-    print ("Invalid input, try again")
+    print("Invalid input, try again")

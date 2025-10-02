@@ -16,7 +16,7 @@ conn.close()
 # function to insert data into a database for all the data
 def insert_stock_data(data):
     """insert data into the database"""
-    
+
     conn = sqlite3.connect('stock_data.db')
     c = conn.cursor()
     for index, row in data.iterrows():
@@ -24,4 +24,3 @@ def insert_stock_data(data):
                   (index.strftime('%Y-%m-%d'), row['Open'], row['High'], row['Low'], row['Close'], row['Volume']))
     conn.commit()
     conn.close()
-
