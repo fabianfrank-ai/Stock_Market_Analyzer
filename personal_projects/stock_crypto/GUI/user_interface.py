@@ -11,6 +11,7 @@ import plotly.io as pio
 from core.market_screener import heatmap, market_screener, heatmap_portfolio, correlations
 from GUI.colour_coding import color_code, verdict_color, rsi_color, ema_color, macd_color, sma_color, bollinger_color, atr_color
 from core.network_graphing import plot_network
+from data.fetch_data import fetch_stock_data # for errorhandling purposes
 
 
 
@@ -187,7 +188,14 @@ def user_portfolio():
  
         if stock_buy and buy_in_price and stock_amount:
             if st.button("Add"):
-                return stock_buy, buy_in_price, stock_amount  
+                # only return data if input is valid, otherwise return an error
+                try:
+                    float(stock_amount)
+                    float(buy_in_price)
+                    fetch_stock_data(stock_buy, '30d', '1d')
+                    return stock_buy, buy_in_price, stock_amount  
+                except Exception as e: 
+                    st.error("Uh oh! Please check your input!")
 
 
 
@@ -201,6 +209,7 @@ def tab_stock_chart(stock , price_change , data , selected_indicators ,data_sma_
      """Use retreived data from main to create plots for the data and create heatmap if necessary"""
     
      with tab_long:
+        
         fig_long_term ,(ax,ax2) = plt.subplots(2,1, figsize=(16,20), sharex=True)
         fig_long_term.tight_layout(pad=5.0)
 
@@ -363,27 +372,30 @@ def tab_stock_chart(stock , price_change , data , selected_indicators ,data_sma_
 
 def tab_short_term(data, stock):
     '''Creates a tab with the most recent data plotted'''
-    today_data = data['Close'].iloc[-1]
-    today_data = round(today_data, 2)
-    beginning_data = data['Close'].iloc[0]
-    beginning_data = round(beginning_data, 2)
-    
-    # basically same thing than the long term tab but short
-    with tab_short:
-        st.write(f"{stock} : {today_data}$")
-        fig_short_term ,(ax) = plt.subplots(figsize=(16,8))
-    
-       
-        # name the axes and add a grid
-        ax.set_xlabel('Date')
-        ax.set_ylabel('Price (USD)') 
-        ax.grid()
-        #ax.set_title(f'{stock} Stock Price between {data.index[0].date()} and {data.index[-1].date()}')
+    try:
+        today_data = data['Close'].iloc[-1]
+        today_data = round(today_data, 2)
+        beginning_data = data['Close'].iloc[0]
+        beginning_data = round(beginning_data, 2)
         
-        ax.plot(data.index, data['Close'], label =f'Movement of {stock} in a short frame', color = "#EA00FF")
+        # basically same thing than the long term tab but short
+        with tab_short:
+            st.write(f"{stock} : {today_data}$")
+            fig_short_term ,(ax) = plt.subplots(figsize=(16,8))
         
-        
-        st.pyplot(fig_short_term)
+
+            # name the axes and add a grid
+            ax.set_xlabel('Date')
+            ax.set_ylabel('Price (USD)') 
+            ax.grid()
+            #ax.set_title(f'{stock} Stock Price between {data.index[0].date()} and {data.index[-1].date()}')
+            
+            ax.plot(data.index, data['Close'], label =f'Movement of {stock} in a short frame', color = "#EA00FF")
+            
+            
+            st.pyplot(fig_short_term)
+    except Exception as e:
+        st.error(f"Oops, something went wrong, try again: {e}")
     
 
 
@@ -447,32 +459,33 @@ def tab_heatmap():
 def tab_prediction(data_pred, data, sk_data_x, sk_data_y, timeframe):
     '''Create a portfolio calculator for input given by the user'''
 
-
     with tab3:
-        
-        fig_prediction, ax = plt.subplots(figsize = (16,8))
-        
-        ax.set_xlabel('Date')
-        ax.set_ylabel('Price (USD)') 
-        ax.grid()
-        
-        ax.plot(data.index, data['Close'], label = "Stock price in the past", color = 'red', zorder = 5)
-        ax.plot(data_pred.index, data_pred['Close'], label = f"Stock price prediction for the next {timeframe} days", color = "#24FF07", linestyle = "--" )
+        try : 
+            fig_prediction, ax = plt.subplots(figsize = (16,8))
+            
+            ax.set_xlabel('Date')
+            ax.set_ylabel('Price (USD)') 
+            ax.grid()
+            
+            ax.plot(data.index, data['Close'], label = "Stock price in the past", color = 'red', zorder = 5)
+            ax.plot(data_pred.index, data_pred['Close'], label = f"Stock price prediction for the next {timeframe} days", color = "#24FF07", linestyle = "--" )
 
-        # removed due to bugfixing
-        #ax.plot(sk_data_x, sk_data_y, label = "Sklearn Prediction")
-        ax.legend()
-        
-        # take the most recent price in the prediction to indicate a potential price in the next n days
-        target_price = data_pred['Close'].iloc[-1]
-        target_price = round(target_price, 2) 
-        
+            # removed due to bugfixing
+            #ax.plot(sk_data_x, sk_data_y, label = "Sklearn Prediction")
+            ax.legend()
+            
+            # take the most recent price in the prediction to indicate a potential price in the next n days
+            target_price = data_pred['Close'].iloc[-1]
+            target_price = round(target_price, 2) 
+            
 
-        st.info(f'The selected stock has the potential to reach {target_price} USD in the next {timeframe} days')
+            st.info(f'The selected stock has the potential to reach {target_price} USD in the next {timeframe} days')
 
-        
-        
-        st.pyplot(fig_prediction)
+            
+            
+            st.pyplot(fig_prediction)
+        except Exception as e:
+            st.error("Something went wrong, did you check for correct input?")
 
 
 

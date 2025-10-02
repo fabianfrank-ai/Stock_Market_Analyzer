@@ -6,8 +6,10 @@ import plotly.graph_objects as go
 import numpy as np
 from networkx.algorithms import community as nx_comm # suggestion by ChatGPT in a brainstorming session
 from scipy.spatial import ConvexHull
-from core.market_screener import correlations
 import plotly.io as pio
+from data.fetch_data import fetch_stock_data
+
+from core.indicators import atr
 
 def create_network(df_correlation, threshold):
     '''Creates a network graph out of a correlation matrix'''
@@ -74,15 +76,18 @@ def plot_network(df_correlation, threshold):
     node_y = []
     node_text = []
     node_colors = []
-    
-
-
+    atr_node =[]
+    node_data = fetch_stock_data(G.nodes, '6mo', '1d')
+    print(G.nodes)
+    print(node_data)
     # aoppend with data from teh nodes
     for node in G.nodes():
         x, y = pos[node]
         node_x.append(x)
         node_y.append(y)
         
+        
+        #atr_node.append(node_data)
        
         adjacencies = list(G.neighbors(node))
         node_info = f'{node}<br>Connections: {len(adjacencies)}'
@@ -92,9 +97,10 @@ def plot_network(df_correlation, threshold):
             node_info += f'<br>Avg Correlation: {avg_corr:.3f}'
         node_text.append(node_info)
         
-        # change colours based on amount of adjacencies
+        # change colours based on amount of adjacencies(not yet implemented)
         node_colors.append(len(adjacencies))
     
+    # DEBUG
     print("Nodes:", G.number_of_nodes())
     print("Edges:", G.number_of_edges())
     
@@ -126,7 +132,7 @@ def plot_network(df_correlation, threshold):
             showscale = True,
             colorscale = 'Plotly3',
             color = node_colors,
-            size = 20,
+            size = atr_node ,
             colorbar = dict(
                 thickness = 15,
                 len = 0.5,
@@ -162,6 +168,8 @@ def plot_network(df_correlation, threshold):
         hoverlabel=dict(
         bgcolor="white",
         font_color="black"))
+    
+    
     
 
 
