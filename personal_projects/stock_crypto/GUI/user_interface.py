@@ -21,7 +21,7 @@ def tab_init():
 
     # create tabs with streamlit
     tab1, tab2, tab3, tab4, tab5 = st.tabs(["Stock Prices 📈", "Heatmap 🟩🟨🟥",
-                                            "Stock Prediction 💹", "Portfolio Calculator", "Experimental : Networking Graph"])
+                                            "Stock Prediction 💹", "Portfolio Calculator ➕", "Networking Graph 📊"])
 
 
 def header():
@@ -161,7 +161,7 @@ def user_input():
 
         with tab_short:
             stock_short = st.text_input('Select Stock ticker (AMZN, MSFT, META)',
-                                        help='Select the stock symbol to fetch data for', value='AMZN', key="Input box for short term analysis")
+                                        help='Select the stock symbol uto fetch data for', value='AMZN', key="Input box for short term analysis")
             options_pills = (["1d", "2d", "3d", "4d", "5d", "6d", '7d'])
             timeframe = st.pills(
                 label="Choose the timeframe you want to see", options=options_pills, default="7d")
@@ -420,6 +420,8 @@ def tab_heatmap():
                     index=False).encode('utf-8')
                 st.download_button(label="Export Heatmap as CSV",
                                    data=heatmap_csv, file_name="Heatmap.csv", mime="text/csv")
+                
+            st.warning('Note: There is a bug with the heatmap generation for SMA and Bolliner percentages. I am working on a fix!')
         # ... or choose from a historical option
         with col2:
             # get pre calculated files from the folder and sort them
@@ -489,6 +491,7 @@ def tab_portfolio_calculator(portfolio_df):
         st.dataframe(portfolio_df.style.map(color_code, subset=['Change%']))
         st.download_button(label="Download your portfolio as csv",
                            data=portfolio_csv, file_name="Portfolio.csv", mime="text/csv")
+        
 
         heatmap_portf = heatmap_portfolio(portfolio_df)
         heatmap_portf_csv = heatmap_portf.to_csv(index=False).encode('utf-8')

@@ -24,3 +24,5 @@ def insert_stock_data(data):
                   (index.strftime('%Y-%m-%d'), row['Open'], row['High'], row['Low'], row['Close'], row['Volume']))
     conn.commit()
     conn.close()
+
+

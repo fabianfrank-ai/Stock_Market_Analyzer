@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 from data.fetch_data import fetch_stock_data
 from core.indicators import sma,  bollinger_bands, rsi, price_change, ema, macd, moving_average_crossover, atr
 from core.verdict import generate_verdict
