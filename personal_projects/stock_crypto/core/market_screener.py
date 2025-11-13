@@ -17,8 +17,9 @@ def get_tickers():
     tables = pd.read_html(html)
 
     # filter all the tickers from the table on wikipedia
-    sp500_tickers = tables[0]['Symbol'].tolist()
-
+    # note: the S&P 500 table is the second table on the page because they changed it recently
+    sp500_tickers = tables[1]['Symbol'].tolist()
+   
     return sp500_tickers
 
 
@@ -228,7 +229,7 @@ def heatmap_portfolio(portfolio):
                 'Verdict': verdict,
                 'Risk': atr_data
             })
-
+        
         # Print any errors and continue with the next ticker
         except Exception as e:
             print(f"Error processing {ticker}: {e}")
