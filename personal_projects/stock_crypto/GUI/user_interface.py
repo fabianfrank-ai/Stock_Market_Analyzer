@@ -421,7 +421,7 @@ def tab_heatmap():
                 st.download_button(label="Export Heatmap as CSV",
                                    data=heatmap_csv, file_name="Heatmap.csv", mime="text/csv")
                 
-            st.warning('Note: There is a bug with the heatmap generation for SMA and Bolliner percentages. I am working on a fix!')
+            
         # ... or choose from a historical option
         with col2:
             # get pre calculated files from the folder and sort them
@@ -447,7 +447,7 @@ def tab_heatmap():
                          .map(ema_color, subset=['EMA Diff'])
                          .map(macd_color, subset=['MACD Diff'])
                          .map(atr_color, subset=['Risk']))
-        st.info("Note: Historical data can't display the sma difference due to it's short timeframe. It also tends to be more passive because of it.")
+        st.info("Note: Historical data uses SMA20 and SMA50 for calculations instead of SMA30 and SMA100 to better fit the shorter timeframes")
 
 
 def tab_prediction(data_pred, data, sk_data_x, sk_data_y, timeframe):

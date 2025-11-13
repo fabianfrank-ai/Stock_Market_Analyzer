@@ -10,7 +10,6 @@ def sma(data, window):
 
     # SMA = sum of closing prices over the window / window size (SMA30 and 100 are used, so window=100)
     # https://medium.com/analytics-vidhya/sma-short-moving-average-in-python-c656956a08f8
-
     sma = data['Close'].rolling(window=window).mean()
 
     return sma

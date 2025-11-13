@@ -17,7 +17,7 @@ def get_tickers():
     tables = pd.read_html(html)
 
     # filter all the tickers from the table on wikipedia
-    # note: the S&P 500 table is the second table on the page because they changed it recently
+    # note: the S&P 500 table is the second table on the page now because they changed it recently
     sp500_tickers = tables[1]['Symbol'].tolist()
    
     return sp500_tickers
@@ -62,6 +62,8 @@ def market_screener():
 
 def heatmap(start, end):
     """Generate a Dataframe of S&P 500 companies based on their gain/loss percentage over the last day."""
+
+    print(start, end)
     ticker_data = []
     change_data = []
     verdict = []
@@ -78,33 +80,41 @@ def heatmap(start, end):
     for ticker in sp500_tickers:
         try:
 
-            # fetch data
-            if start and end is None:
+            # fetch data, depending on whether start and end dates are provided (for database or not)
+            if start is None and end is None:
                 data = fetch_stock_data(ticker, "6mo", '1d')
+                sma_percentage = (
+                    sma(data, 30).iloc[-1] - sma(data, 100).iloc[-1]) / sma(data, 100).iloc[-1] * 100
+                latest_close = data['Close'].iloc[-1]
+                previous_close = data['Close'].iloc[-2]
+                latest_change = (
+                    (latest_close - previous_close) / previous_close) * 100
+                latest_change = round(latest_change, 2)
             else:
+                # use the provided dates to fetch data
                 data = fetch_stock_data_set_dates(ticker, start=start, end=end)
+                # calculate sma percentages based on shorter timeframes, due to the length of a quartal
+                sma_percentage = (
+                    sma(data, 20).iloc[-1] - sma(data, 50).iloc[-1]) / sma(data, 50).iloc[-1] * 100
+                # calculate the change from the first to the last available data point, for more meaningful results
+                latest_close = data['Close'].iloc[-1]
+                previous_close = data['Close'].iloc[0]
+                latest_change = (
+                    (latest_close - previous_close) / previous_close) * 100
+                latest_change = round(latest_change, 2)
 
             # check if data is valid
             if data is None or len(data) < 2:
                 print(f"Not enough data for {ticker}")
                 continue
-
-            # calculate the percentage change from the previous close to the latest close
-            latest_close = data['Close'].iloc[-1]
-            previous_close = data['Close'].iloc[-2]
-            latest_change = (
-                (latest_close - previous_close) / previous_close) * 100
-            latest_change = round(latest_change, 2)
-
+            
             # append all the data to the respective lists
             ticker_data.append(ticker)
             change_data.append(latest_change)
 
             ema_percentage = (
                 ema(data, 12).iloc[-1] - ema(data, 26).iloc[-1]) / ema(data, 26).iloc[-1] * 100
-            ema_percentage = round(ema_percentage, 2)
-            sma_percentage = (
-                sma(data, 30).iloc[-1] - sma(data, 100).iloc[-1]) / sma(data, 100).iloc[-1] * 100
+            ema_percentage = round(ema_percentage, 2)         
             sma_percentage = round(sma_percentage, 2)
 
             macd_line, signal_line = macd(data)
@@ -117,9 +127,12 @@ def heatmap(start, end):
             bollinger_percentage = (
                 data['Close'].iloc[-1] - lower_band.iloc[-1]) / (upper_band.iloc[-1] - lower_band.iloc[-1])
             bollinger_percentage = round(bollinger_percentage, 2)
+            rsi_value = rsi(data, 14).iloc[-1]
+            rsi_value = round(rsi_value, 2)
+
 
             bollinger_data.append(bollinger_percentage)
-            rsi_data.append(rsi(data, 14).iloc[-1])
+            rsi_data.append(rsi_value)
             ema_data.append(ema_percentage)
             macd_data.append(macd_difference)
 
@@ -127,7 +140,9 @@ def heatmap(start, end):
             verdict.append(generate_verdict(data, sma(data, 30), sma(
                 data, 100), *bollinger_bands(data, 30), rsi(data, 14)))
 
-            atr_data.append(atr(data))
+            atr_value = atr(data)
+            atr_value = round(atr_value, 2)
+            atr_data.append(atr_value)
 
             # create a dataframe from the lists
             df = pd.DataFrame({
@@ -175,7 +190,7 @@ def heatmap_portfolio(portfolio):
 
             # fetch data
             data = fetch_stock_data(ticker, "6mo", '1d')
-
+            print(len(data))
             # check if data is valid
             if data is None or len(data) < 2:
                 print(f"Not enough data for {ticker}")

@@ -70,13 +70,14 @@ def dataframe_to_csv_parquet_heatmap():
         # save data as parquet(fast for code) and readable csv(if desired)
         heatmap_dataframe.to_parquet(
             f"personal_projects/stock_crypto/data_saved/heatmap_parquet/Heatmap_{year}_Q{quarter}.parquet")
+        print(f'Parquet file for {quarter}, {year} has been saved successfully')
 
         # increase quartal
         quarter += 1
         if quarter > 4:
             quarter = 1
             year += 1
-
+        
 
 # lots of debugging because it is(was) very unstable
 def parquet_to_json():
