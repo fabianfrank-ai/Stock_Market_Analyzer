@@ -1,0 +1,46 @@
+# ----------------------
+# Python
+# ----------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.pdb
+
+# Distribution / Packaging
+build/
+dist/
+*.egg-info/
+*.egg
+*.whl
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# ----------------------
+# IDEs
+# ----------------------
+# VS Code
+.vscode/
+# JetBrains / PyCharm
+.idea/
+
+# ----------------------
+# Dev containers
+# ----------------------
+.devcontainer/
+
+# ----------------------
+# Jupyter Notebooks
+# ----------------------
+.ipynb_checkpoints/
+
+# ----------------------
+# OS-specific
+# ----------------------
+.DS_Store
+Thumbs.db
