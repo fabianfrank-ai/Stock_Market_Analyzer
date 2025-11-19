@@ -3,7 +3,7 @@
 import pandas as pd
 import numpy as np
 import urllib.request
-from data.fetch_data import fetch_stock_data, fetch_stock_data_set_dates
+from data.fetch_data import fetch_stock_data, fetch_stock_data_set_dates, fetch_multiple_stocks_data
 from core.indicators import sma, bollinger_bands, rsi, ema, macd, atr
 from core.verdict import generate_verdict
 
@@ -19,6 +19,8 @@ def get_tickers():
     # filter all the tickers from the table on wikipedia
     # note: the S&P 500 table is the second table on the page now because they changed it recently
     sp500_tickers = tables[1]['Symbol'].tolist()
+    # wikipedia uses dots in some ticker symbols, but yfinance needs dashes (e.g. BF.B -> BF-B)
+    sp500_tickers = [t.replace(".", "-") for t in sp500_tickers]
    
     return sp500_tickers
 
@@ -63,7 +65,6 @@ def market_screener():
 def heatmap(start, end):
     """Generate a Dataframe of S&P 500 companies based on their gain/loss percentage over the last day."""
 
-    print(start, end)
     ticker_data = []
     change_data = []
     verdict = []
@@ -75,14 +76,18 @@ def heatmap(start, end):
     atr_data = []
 
     sp500_tickers = get_tickers()
+    ticker_dataframe = fetch_multiple_stocks_data(sp500_tickers, period="6mo", interval='1d')
+    dfs = {
+        ticker: ticker_dataframe[ticker] for ticker in sp500_tickers if ticker in ticker_dataframe.columns.get_level_values(0)
+    }
 
     # for every ticker in sp500
-    for ticker in sp500_tickers:
+    for ticker in list(dfs.keys()):
         try:
 
             # fetch data, depending on whether start and end dates are provided (for database or not)
             if start is None and end is None:
-                data = fetch_stock_data(ticker, "6mo", '1d')
+                data = dfs[ticker]
                 sma_percentage = (
                     sma(data, 30).iloc[-1] - sma(data, 100).iloc[-1]) / sma(data, 100).iloc[-1] * 100
                 latest_close = data['Close'].iloc[-1]
