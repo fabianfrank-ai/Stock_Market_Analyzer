@@ -1,4 +1,4 @@
-# Stock Market Analysis Tool: Live Demo: https://mainpy-ha8s7cwyirhspxlutcnpbv.streamlit.app
+# Stock Market Analysis Tool: Live Demo: https://stockmarketanalyzer-fabif.streamlit.app/
 
 An interactive stock analysis and visualization platform designed to bring together price data, technical indicators, heatmaps, portfolio tracking, and network analysis in a single, user-friendly interface.  
 The application runs in the browser using Streamlit and requires no complex setup.
@@ -59,10 +59,10 @@ Using historical data is usually faster.
 ## 📥 Clone Repository
 
 ```bash
-git clone https://github.com/fabianfrank-ai/LaplandUASexercises.git
-cd LaplandUASexercises
+git clone github.com/fabianfrank-ai/Stock_Market_Analyzer.git
+cd Stock_Market_Analyzer
 pip install -r requirements.txt
-streamlit run personal_projects/stock_crypto/main.py
+streamlit run stock_crypto/main.py
 ```
 
 # 📂 Usage
