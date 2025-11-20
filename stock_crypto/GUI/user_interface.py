@@ -415,8 +415,7 @@ def tab_heatmap():
                     st.session_state.heatmap_data = heatmap(None, None)
 
                 st.write('S&P 500 Daily Change Percentage:')
-                
-            
+                    
         # ... or choose from a historical option
         with col2:
             # get pre calculated files from the folder and sort them
