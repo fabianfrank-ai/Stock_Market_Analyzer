@@ -4,7 +4,6 @@ from core.indicators import sma,  bollinger_bands, rsi, price_change, ema, macd,
 from core.verdict import generate_verdict
 from GUI.user_interface import sidebar, user_input, user_portfolio, tab_stock_chart, header, tab_init, tab_heatmap, tab_portfolio_calculator, tab_prediction, tab_network_graph, tab_short_term
 from core.prediction import prediction
-from data.sklearn_prediction import sklearn_prediction
 from core.portfolio import generate_portfolio
 
 

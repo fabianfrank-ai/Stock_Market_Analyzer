@@ -81,7 +81,7 @@ def prediction(data, timeframe):
         new_row = pd.DataFrame({'Close': [next_close]},  index=[next_date])
 
         # Concatenate the new row
-
+        # https://pandas.pydata.org/docs/reference/api/pandas.concat.html
         data_pred = pd.concat([data_pred, new_row])
 
     return data_pred

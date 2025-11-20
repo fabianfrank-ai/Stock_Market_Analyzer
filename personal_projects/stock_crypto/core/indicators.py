@@ -50,6 +50,7 @@ def bollinger_bands(data, window):
     # typically if the current market price is near/above the upper band, the asset is considered overbought
     # if the price is near/below the lower band, the asset is considered oversold
     sma = data['Close'].rolling(window=window).mean()
+    # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.std.html
     std = data['Close'].rolling(window=window).std()
     upper_band = sma + (std * 2)
     lower_band = sma - (std * 2)
@@ -100,6 +101,7 @@ def macd(data, short_window=12, long_window=26, signal_window=9):
     ema_short = ema(data, short_window)
     ema_long = ema(data, long_window)
     macd_line = ema_short - ema_long
+    # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.ewm.html
     signal_line = macd_line.ewm(span=signal_window, adjust=False).mean()
     return macd_line, signal_line
 

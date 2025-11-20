@@ -157,6 +157,7 @@ def clustering(G, pos, fig):
 
     # remove non-existing nodes and partition the existing ones (otherwise nx will literally scream at you in agony)
     # replaced louvain with greedy modularity because louvain failed consistently (do not ask me why, I went through enough)
+    # https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.community.modularity_max.greedy_modularity_communities.html
     G_clean = G.copy()
     G_clean.remove_nodes_from(list(nx.isolates(G_clean)))
     communities = nx_comm.greedy_modularity_communities(G_clean)
