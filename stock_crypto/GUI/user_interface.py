@@ -399,7 +399,7 @@ def tab_heatmap():
                     st.session_state.heatmap_data = heatmap(None, None)
 
                 st.write('S&P 500 Daily Change Percentage:')
-                    
+
         # ... or choose from a historical option
         with col2:
             # get pre calculated files from the folder and sort them
@@ -426,9 +426,9 @@ def tab_heatmap():
                          .map(macd_color, subset=['MACD Diff'])
                          .map(atr_color, subset=['Risk']))
             heatmap_csv = st.session_state.heatmap_data.to_csv(
-                        index=False).encode('utf-8')
+                index=False).encode('utf-8')
             st.download_button(label="Export Heatmap as CSV",
-                                    data=heatmap_csv, file_name="Heatmap.csv", mime="text/csv")
+                               data=heatmap_csv, file_name="Heatmap.csv", mime="text/csv")
             st.info("Note: Historical data uses SMA20 and SMA50 for calculations instead of SMA30 and SMA100 to better fit the shorter timeframes")
 
 
@@ -473,7 +473,6 @@ def tab_portfolio_calculator(portfolio_df):
         st.dataframe(portfolio_df.style.map(color_code, subset=['Change%']))
         st.download_button(label="Download your portfolio as csv",
                            data=portfolio_csv, file_name="Portfolio.csv", mime="text/csv")
-        
 
         heatmap_portf = heatmap_portfolio(portfolio_df)
         heatmap_portf_csv = heatmap_portf.to_csv(index=False).encode('utf-8')
@@ -529,17 +528,22 @@ def tab_network_graph():
 
         with tab_historical_data:
             # create an option for every entry in the folder and create a select slider, then read json file
-            for file in Path("stock_crypto/data_saved/correlation_json").glob("*.json"):
+            for file in Path("stock_crypto/data_saved/correlation_parquet").glob("*.parquet"):
 
                 network_quarter_options.append(f'{file.stem}')
 
             network_quarter_options.sort()
             network_quarter_choice = st.select_slider(
                 label="Select a quarter to display the network graph from", options=network_quarter_options)
+
+            threshold = st.slider("Threshold for the correlations", min_value=0.3, max_value=1.0, value=0.7,
+                                  help="Bigger correlations usually mean companies are very connected. NOTE: Be aware that a low threshold might slow your PC!", key="Network threshold slider")
+
             if st.button("Go", key="Network go button"):
-                fig_network = pio.read_json(
-                    f"stock_crypto/data_saved/correlation_json/{network_quarter_choice}.json")
+                st.session_state.df_correlation = pd.read_parquet(
+                    f'stock_crypto/data_saved/correlation_parquet/{network_quarter_choice}.parquet').copy()
+                fig_network = plot_network(
+                    st.session_state.df_correlation, threshold)
 
         if fig_network is not None:
             st.plotly_chart(fig_network)
-        st.info("Please note that with historical data a threshold of 0.7 is pre-set for now. Might be customizable in the future")

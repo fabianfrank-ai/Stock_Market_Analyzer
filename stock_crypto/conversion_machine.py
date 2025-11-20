@@ -18,7 +18,7 @@ def get_month_end(year, month):
     return date(year, month, day)
 
 
-def dataframe_to_csv_parquet_network():
+def dataframe_to_parquet_network():
     '''Converts pandas dataframes into csv and parquet data'''
     year = 2020
     quarter = 1
@@ -41,10 +41,6 @@ def dataframe_to_csv_parquet_network():
             f"stock_crypto/data_saved/correlation_parquet/Correlations_{year}_Q{quarter}.parquet")
         print(
             f'Parquet file for {quarter}, {year} has been saved successfully')
-        correlation_dataframe.to_csv(
-            f"stock_crypto/data_saved/correlation_csv/Correlations_{year}_Q{quarter}.csv")
-        print(f'CSV file for {quarter}, {year} has been crteated successfully')
-
         # increase quartal
         quarter += 1
         if quarter > 4:
@@ -52,7 +48,7 @@ def dataframe_to_csv_parquet_network():
             year += 1
 
 
-def dataframe_to_csv_parquet_heatmap():
+def dataframe_to_parquet_heatmap():
     '''Converts pandas dataframes into csv and parquet data'''
     year = 2020
     quarter = 1
@@ -70,87 +66,25 @@ def dataframe_to_csv_parquet_heatmap():
         # save data as parquet(fast for code) and readable csv(if desired)
         heatmap_dataframe.to_parquet(
             f"stock_crypto/data_saved/heatmap_parquet/Heatmap_{year}_Q{quarter}.parquet")
-        print(f'Parquet file for {quarter}, {year} has been saved successfully')
+        print(
+            f'Parquet file for {quarter}, {year} has been saved successfully')
 
         # increase quartal
         quarter += 1
         if quarter > 4:
             quarter = 1
             year += 1
-        
+
 
 # lots of debugging because it is(was) very unstable
-def parquet_to_json():
-    '''Convert dataframes, saved as parquet into json plots'''
-    # apparently plotly can't open their own html files but only json files
-    for file in Path("stock_crypto/data_saved/correlation_parquet").glob("*.parquet"):
-        print(f"Starting with {file.stem}")
-        df = pd.read_parquet(file).copy()
-
-        df.clip(-1, 1)
-        fig = {}
-
-        try:
-            fig = plot_network(df, 0.7)
-
-            print(
-                f"Figure has {len(fig.data)} traces and {len(fig.layout.shapes)} shapes BEFORE write_html")
-            
-            output_path = Path(
-                "stock_crypto/data_saved/correlation_json") / f"{file.stem}.json"
-            # write the json file
-            pt.io.write_json(fig, output_path)
-
-            print(
-                f"Plot has {len(fig.data)} traces and {len(fig.layout.shapes)} shapes AFTER write_html")
-            print([trace.name for trace in fig.data])
-            print(fig.layout.shapes)
-            fig.layout.shapes = ()
-
-            print(f"{file.stem} has been added successfully")
-
-        # catch exceptions for debugging
-        except Exception as e:
-            print(f'{file.stem} could not be added, please check : {e}')
-            print(df.isna().sum().sum())
-            print(df.min().min(), df.max().max())
-
-
-def to_sql():
-    '''Convert heatmap dataframes into a sqlite database'''
-    # connect to the database
-    conn = sqlite3.connect('stock_data.db')
-
-    # loop through all parquet files and add them to the database
-    for file in Path("stock_crypto/data_saved/heatmap_parquet").glob("*.parquet"):
-        print(f"Starting with {file.stem}")
-        df = pd.read_parquet(file).copy()
-
-        print(df.head())
-
-        # clean the data
-        df.fillna(0)
-        
-        # write the data to the database
-        df.to_sql(file.stem, conn, if_exists = 'replace', method = 'callable')
-        
-        print(f"{file.stem} has been added successfully")
-
-    conn.commit()
-    conn.close()
-
 
 
 choice = input(
     "What do you want to convert?\n -1 correlations \n -2 heatmaps \n -3 parquet \n - DO NOT USE, WORK IN PROGRESS: 4 to sql \n Enter number: ")
 
 if choice == '1':
-    dataframe_to_csv_parquet_network()
+    dataframe_to_parquet_network()
 elif choice == '2':
-    dataframe_to_csv_parquet_heatmap()
-elif choice == '3':
-    parquet_to_json()
-elif choice == '4':
-    to_sql()
+    dataframe_to_parquet_heatmap()
 else:
     print("Invalid input, try again")
