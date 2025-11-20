@@ -81,7 +81,7 @@ def heatmap(start, end):
         ticker: ticker_dataframe[ticker] for ticker in sp500_tickers if ticker in ticker_dataframe.columns.get_level_values(0)
     }
 
-    # for every ticker in sp500
+    # for every ticker in sp500(what is in the dataframe)
     for ticker in list(dfs.keys()):
         try:
 
@@ -264,15 +264,20 @@ def correlations(start, end):
     '''Calculates the correlations of the S&P 500 stock movements within the past 6 months'''
 
     sp500_tickers = get_tickers()
+    sp500_tickers = get_tickers()
+    ticker_dataframe = fetch_multiple_stocks_data(sp500_tickers, period="6mo", interval='1d')
+    dfs = {
+        ticker: ticker_dataframe[ticker] for ticker in sp500_tickers if ticker in ticker_dataframe.columns.get_level_values(0)
+    }
     data_dictionary = {}
 
     # for every ticker in sp500
-    for ticker in sp500_tickers:
+    for ticker in list(dfs.keys()):
         try:
 
             # fetch data
-            if start and end is None:
-                data = fetch_stock_data(ticker, "6m", '1d')
+            if start is None and end is None:
+                data = dfs[ticker]
             else:
                 data = fetch_stock_data_set_dates(ticker, start, end)
 
