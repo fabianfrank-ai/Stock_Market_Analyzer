@@ -538,7 +538,7 @@ def tab_network_graph():
                 label="Select a quarter to display the network graph from", options=network_quarter_options)
             if st.button("Go", key="Network go button"):
                 fig_network = pio.read_json(
-                    f"personal_projects/stock_crypto/data_saved/correlation_json/{network_quarter_choice}.json")
+                    f"stock_crypto/data_saved/correlation_json/{network_quarter_choice}.json")
 
         if fig_network is not None:
             st.plotly_chart(fig_network)

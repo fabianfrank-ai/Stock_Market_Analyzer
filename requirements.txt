@@ -9,7 +9,6 @@ networkx
 plotly
 python-louvain
 scipy
-watchdog
 
 pyarrow
 fastparquet

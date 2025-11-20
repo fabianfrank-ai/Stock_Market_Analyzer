@@ -62,7 +62,7 @@ def plot_network(df_correlation, threshold):
     '''Plots the graph with plotly'''
 
     G = create_network(df_correlation, threshold)
-
+    
     pio.templates.default = "plotly_dark"
 
     # use spring layout, most meaningful
@@ -95,6 +95,7 @@ def plot_network(df_correlation, threshold):
     node_text = []
     node_colors = []
 
+    company_info = get_company_info()
  
     # aoppend with data from teh nodes
     for node in G.nodes():
@@ -104,7 +105,7 @@ def plot_network(df_correlation, threshold):
 
         # get adjacencies and average correlation
         adjacencies = list(G.neighbors(node))
-        node_info = f'{node}<br>Connections: {len(adjacencies)}'
+        node_info = f'{node}<br> Company: {company_info.get(node, {}).get("name", "N/A")} <br> Sector: {company_info.get(node, {}).get("sector", "N/A")} <br> Connections: {len(adjacencies)}'
         if len(adjacencies) > 0:
             correlations = [G[node][adj]['weight'] for adj in adjacencies]
             avg_corr = np.nanmean(correlations) if len(correlations) else 0.0
