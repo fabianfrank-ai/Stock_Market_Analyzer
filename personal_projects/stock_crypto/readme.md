@@ -1,45 +1,81 @@
-## Stock market analyser : LIVE DEMO: (https://mainpy-ha8s7cwyirhspxlutcnpbv.streamlit.app)
+# Stock Market Analysis Tool: Live Demo: https://mainpy-ha8s7cwyirhspxlutcnpbv.streamlit.app
 
-# Overview
+An interactive stock analysis and visualization platform designed to bring together price data, technical indicators, heatmaps, portfolio tracking, and network analysis in a single, user-friendly interface.  
+The application runs in the browser using Streamlit and requires no complex setup.
 
-This project is an interactive stock tracker and analysis tool. It combines datafetching, financial indicators, simple portfolio management and network analysis in a single user-friendly interface.
+---
 
-# Main features:
+## 🚀 Key Features
 
-- Ticker choice and datafetching (S&P500 or your own)
-- Financial indicators (SMA, EMA, ATR, RSI, MACD, etc...)
-- Interactive network with Plotly
-- Heatmaps showing indicators of all S&P 500 tickers
-- Portfolio Tracker
-- (almost) real time stock prices
-- a deterministic prediction tool
-- an extensive verdict system for buy-signals
+### 📊 Market & Data Analysis
+- Fetch stock data from S&P 500 or user-selected tickers
+- (Almost) real-time price updates
+- Comprehensive technical indicators:
+  - SMA, EMA, ATR, RSI, MACD and more
+- Heatmaps for all S&P 500 tickers
+- Deterministic prediction model
+- Extensive verdict system for buy signals
 
-# How does it work?
+### 🌐 Interactive Visualizations
+- Fully interactive hotspot network visualization (Plotly)
+- Multiple charting and overview dashboards
 
-- click on the link in the header
-- you'll be redirected to the streamlit web page
-- you might need to wake the app up first due to the nature of streamlit, this might take a minute or two
-- feel free to explore any field that interests you 
-- Note: loading time for creating new networks or heatmaps might be pretty long. Feel free to use historical data for quicker access
+### 💼 Portfolio Tracking
+- Lightweight and easy-to-use portfolio management interface
+- Endless potential for expansion
 
-# Why is it useful?
+### ⚙️ Robust Error Handling
+- Invalid input does not crash the application
+- Users are informed via clear error messages
+- Users can continue working without restarting
+- Despite precautions, bugs may still occur – please report them
 
-- It shows historical data and recent data
-- Multiple indicators for decisionmaking and analyzing
-- User-friendly and easy to understand
-- Many features which other websites hide behind a paywall
-- Easy infrastructure allows for countless more additions
+### 🔮 Future Plans
+- Performance optimization for heatmaps and networks
+- Optional C++ acceleration for heavy computations
+- Upgrade static plots to fully interactive (Matplotlib → Plotly)
 
-# Error-handling
+---
 
-- The program is developed in a way to prevent wrong user-input from crashing the app
-- Entering wrong tickers or numbers will result in an error message
-- The error message does not prevent the user from continuing his search for desired data
-- Even though I think I prevented everything bugs might occur anyways. Please let me know if you find any and the problem will be resolved very quickly
+# 💡 How Does It Work?
 
-# Future implementations:
+1. Start the application using Streamlit (see below)
+2. The app opens in your default browser
+3. Streamlit may need a few seconds to wake up when launched
+4. Explore different dashboards and tools freely
 
-- Performance optimization and reduce waiting times for plots or heatmaps
-- Potential optimization to use C++ to accelerate certain calculations
-- Replacing existing plots with interactive plots (matplotlib -> plotly)
+**Note:**  
+Generating large network graphs can take time.  
+Using historical data is usually faster.
+
+---
+
+# 🧰 Installation
+
+## 🔧 Requirements
+- Python 3.9 or newer
+- pip installed
+
+## 📥 Clone Repository
+
+```bash
+git clone https://github.com/fabianfrank-ai/LaplandUASexercises.git
+cd LaplandUASexercises
+pip install -r requirements.txt
+streamlit run personal_projects/stock_crypto/main.py
+```
+
+# 📂 Usage
+Once launched, the user can:
+- Select a ticker from the S&P 500 or enter their own
+- View price history and indicators
+- Generate heatmaps
+- Display network visualizations
+- Build and analyze a portfolio
+- Run price predictions
+- Interpret automatic verdicts for decision support
+Everything is controlled through the Streamlit browser interface.
+
+# 📑 License
+This project is released under the terms of the license included in this repository.
+
