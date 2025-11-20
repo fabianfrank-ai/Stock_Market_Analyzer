@@ -5,11 +5,12 @@ import networkx as nx
 import plotly.graph_objects as go
 import numpy as np
 import urllib.request
+
 # suggestion by ChatGPT in a brainstorming session
 from networkx.algorithms import community as nx_comm
 from scipy.spatial import ConvexHull
 import plotly.io as pio
-from data.fetch_data import fetch_stock_data
+
 
 def get_company_info():
     '''Fetches company names and sectors for S&P 500 companies from Wikipedia'''
@@ -21,7 +22,7 @@ def get_company_info():
     tables = pd.read_html(html)
 
     # extract company names, sectors and tickers
-    company_names = tables[1]['Security'].tolist()  
+    company_names = tables[1]['Security'].tolist()
     company_sector = tables[1]['GICS Sector'].tolist()
     sp500_tickers = tables[1]['Symbol'].tolist()
     # wikipedia uses dots in some ticker symbols, but yfinance needs dashes (e.g. BF.B -> BF-B)
@@ -36,6 +37,7 @@ def get_company_info():
             'sector': company_sector[i]
         }
     return company_info
+
 
 def create_network(df_correlation, threshold):
     '''Creates a network graph out of a correlation matrix'''
@@ -62,7 +64,7 @@ def plot_network(df_correlation, threshold):
     '''Plots the graph with plotly'''
 
     G = create_network(df_correlation, threshold)
-    
+
     pio.templates.default = "plotly_dark"
 
     # use spring layout, most meaningful
@@ -96,7 +98,7 @@ def plot_network(df_correlation, threshold):
     node_colors = []
 
     company_info = get_company_info()
- 
+
     # aoppend with data from teh nodes
     for node in G.nodes():
         x, y = pos[node]
@@ -111,7 +113,6 @@ def plot_network(df_correlation, threshold):
             avg_corr = np.nanmean(correlations) if len(correlations) else 0.0
             node_info += f'<br>Avg Correlation: {avg_corr:.3f}'
 
-       
         node_text.append(node_info)
 
         # change colours based on amount of adjacencies(not yet implemented)
@@ -128,7 +129,7 @@ def plot_network(df_correlation, threshold):
         hoverinfo='none',
         mode='lines',
         name='Connections'))
-   
+
     # add nodes with data
     fig.add_trace(go.Scatter(
         x=node_x, y=node_y,
@@ -139,7 +140,7 @@ def plot_network(df_correlation, threshold):
         textposition="middle center",
         marker=dict(
             showscale=True,
-            colorscale = 'jet',
+            colorscale='jet',
             color=node_colors,
             size=20,
             colorbar=dict(
