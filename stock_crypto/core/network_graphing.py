@@ -4,12 +4,38 @@ import pandas as pd
 import networkx as nx
 import plotly.graph_objects as go
 import numpy as np
+import urllib.request
 # suggestion by ChatGPT in a brainstorming session
 from networkx.algorithms import community as nx_comm
 from scipy.spatial import ConvexHull
 import plotly.io as pio
 from data.fetch_data import fetch_stock_data
 
+def get_company_info():
+    '''Fetches company names and sectors for S&P 500 companies from Wikipedia'''
+
+    # fetch the wikipedia page
+    url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
+    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    html = urllib.request.urlopen(req).read()
+    tables = pd.read_html(html)
+
+    # extract company names, sectors and tickers
+    company_names = tables[1]['Security'].tolist()  
+    company_sector = tables[1]['GICS Sector'].tolist()
+    sp500_tickers = tables[1]['Symbol'].tolist()
+    # wikipedia uses dots in some ticker symbols, but yfinance needs dashes (e.g. BF.B -> BF-B)
+    sp500_tickers = [t.replace(".", "-") for t in sp500_tickers]
+
+    # create a dictionary mapping tickers to names and sectors
+    company_info = {}
+    for i, ticker in enumerate(sp500_tickers):
+        # map ticker to name and sector
+        company_info[ticker] = {
+            'name': company_names[i],
+            'sector': company_sector[i]
+        }
+    return company_info
 
 def create_network(df_correlation, threshold):
     '''Creates a network graph out of a correlation matrix'''
@@ -68,24 +94,23 @@ def plot_network(df_correlation, threshold):
     node_y = []
     node_text = []
     node_colors = []
-    atr_node = []
-    node_data = fetch_stock_data(G.nodes, '6mo', '1d')
-    print(G.nodes)
-    print(node_data)
+
+ 
     # aoppend with data from teh nodes
     for node in G.nodes():
         x, y = pos[node]
         node_x.append(x)
         node_y.append(y)
 
-        # atr_node.append(node_data)
-
+        # get adjacencies and average correlation
         adjacencies = list(G.neighbors(node))
         node_info = f'{node}<br>Connections: {len(adjacencies)}'
         if len(adjacencies) > 0:
             correlations = [G[node][adj]['weight'] for adj in adjacencies]
-            avg_corr = np.mean(correlations)
+            avg_corr = np.nanmean(correlations) if len(correlations) else 0.0
             node_info += f'<br>Avg Correlation: {avg_corr:.3f}'
+
+       
         node_text.append(node_info)
 
         # change colours based on amount of adjacencies(not yet implemented)
@@ -102,7 +127,7 @@ def plot_network(df_correlation, threshold):
         hoverinfo='none',
         mode='lines',
         name='Connections'))
-
+   
     # add nodes with data
     fig.add_trace(go.Scatter(
         x=node_x, y=node_y,
@@ -113,15 +138,14 @@ def plot_network(df_correlation, threshold):
         textposition="middle center",
         marker=dict(
             showscale=True,
-            colorscale='Plotly3',
+            colorscale = 'jet',
             color=node_colors,
-            size=atr_node,
+            size=20,
             colorbar=dict(
                 thickness=15,
                 len=0.5,
                 x=1.1,
                 title="Connections"),
-            line=dict(width=2, color='white')
         ),
         name='Stocks'))
 

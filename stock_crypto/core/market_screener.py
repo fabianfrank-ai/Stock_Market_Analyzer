@@ -21,46 +21,15 @@ def get_tickers():
     sp500_tickers = tables[1]['Symbol'].tolist()
     # wikipedia uses dots in some ticker symbols, but yfinance needs dashes (e.g. BF.B -> BF-B)
     sp500_tickers = [t.replace(".", "-") for t in sp500_tickers]
-   
-    return sp500_tickers
 
 
-def market_screener():
-    """Screen the market for potential buy opportunities in S&P 500 companies."""
-
-    sp500_tickers = get_tickers()
-
-    for ticker in sp500_tickers:
-        # try, in order to prevent false tickers in eg wikipedia or conversion errors
-        try:
-
-            # fetch data, create smas, bollinger bands and rsi for every ticker
-            data = fetch_stock_data(ticker, "5mo", '1d')
-            sma_30 = sma(data, 30)
-            sma_100 = sma(data, 100)
-            lower_band, upper_band = bollinger_bands(data, 30)
-            rsi_14 = rsi(data, 14)
-
-            # create a verdict for the ticker
-            verdict = generate_verdict(
-                data, sma_30, sma_100, lower_band, upper_band, rsi_14)
-
-            # save the tickers with a buy verdict
-            if verdict == "Strong Buy":
-                return ticker, verdict
-            elif verdict == "Buy":
-                return ticker, verdict
-            else:
-                pass  # No action for "Sell" or "Hold"
-
-        except Exception as e:
-            print(f"Error processing {ticker}: {e}")
-            continue
-
-
-# I'm sure there is a better way to do this, but for now it works, open to suggestions
-# I'm working to create a quicker way
-
+    # fetch data for all tickers at once to improve performance
+    ticker_dataframe = fetch_multiple_stocks_data(sp500_tickers, period="6mo", interval='1d')
+    dfs = {
+        # create a dictionary of dataframes for each ticker
+        ticker: ticker_dataframe[ticker] for ticker in sp500_tickers if ticker in ticker_dataframe.columns.get_level_values(0)
+    }
+    return dfs
 
 def heatmap(start, end):
     """Generate a Dataframe of S&P 500 companies based on their gain/loss percentage over the last day."""
@@ -75,11 +44,7 @@ def heatmap(start, end):
     macd_data = []
     atr_data = []
 
-    sp500_tickers = get_tickers()
-    ticker_dataframe = fetch_multiple_stocks_data(sp500_tickers, period="6mo", interval='1d')
-    dfs = {
-        ticker: ticker_dataframe[ticker] for ticker in sp500_tickers if ticker in ticker_dataframe.columns.get_level_values(0)
-    }
+    dfs = get_tickers()
 
     # for every ticker in sp500(what is in the dataframe)
     for ticker in list(dfs.keys()):
@@ -262,11 +227,9 @@ def heatmap_portfolio(portfolio):
 
 def correlations(start, end):
     '''Calculates the correlations of the S&P 500 stock movements within the past 6 months'''
-    sp500_tickers = get_tickers()
-    ticker_dataframe = fetch_multiple_stocks_data(sp500_tickers, period="6mo", interval='1d')
-    dfs = {
-        ticker: ticker_dataframe[ticker] for ticker in sp500_tickers if ticker in ticker_dataframe.columns.get_level_values(0)
-    }
+    
+    dfs = get_tickers()
+
     data_dictionary = {}
 
     # for every ticker in sp500
