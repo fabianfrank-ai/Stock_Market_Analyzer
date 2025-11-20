@@ -262,8 +262,6 @@ def heatmap_portfolio(portfolio):
 
 def correlations(start, end):
     '''Calculates the correlations of the S&P 500 stock movements within the past 6 months'''
-
-    sp500_tickers = get_tickers()
     sp500_tickers = get_tickers()
     ticker_dataframe = fetch_multiple_stocks_data(sp500_tickers, period="6mo", interval='1d')
     dfs = {
