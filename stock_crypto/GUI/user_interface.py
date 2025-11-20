@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import plotly.io as pio
 
-from core.market_screener import heatmap, market_screener, heatmap_portfolio, correlations
+from core.market_screener import heatmap, heatmap_portfolio, correlations
 from GUI.colour_coding import color_code, verdict_color, rsi_color, ema_color, macd_color, sma_color, bollinger_color, atr_color
 from core.network_graphing import plot_network
 from data.fetch_data import fetch_stock_data  # for errorhandling purposes
@@ -97,22 +97,6 @@ def sidebar():
                 'The new verdict system still uses the five main indicators: SMA, Bollinger Bands, RSI, EMA and MACD.')
             st.write('However, the strength of the signals has been increased. Now, if an indicator shows a very strong buy/sell signal (e.g., RSI > 80 or < 20), it counts as 3 buy/sell signals instead of just 1. This way, the verdict is more responsive to significant market movements.')
             st.write('If 9 or more buy/sell signals are generated, the verdict will be "Strong Buy" or "Strong Sell". If 3-8 buy/sell signals are generated, the verdict will be "Buy" or "Sell". If only 1-2 buy/sell signals are generated, the verdict will be "Hold". If no buy/sell signals are generated, the verdict will also be "Hold".')
-        with st.sidebar.expander('Signal Searcher'):
-
-            st.write('The Signal Searcher is a tool that scans the S&P 500 companies to identify potential buy opportunities based on technical indicators. It fetches data for each company, calculates indicators like SMA, Bollinger Bands, and RSI, and generates a verdict (Buy, Sell, Hold) for each stock.')
-            st.write('If a stock receives a "Buy" verdict from the indicators, it is highlighted as a potential buy opportunity. This tool helps users discover stocks that may be worth further research and consideration for investment.')
-            st.write('Note: The Signal Searcher is for educational purposes only and should not be used for real trading decisions. Always conduct your own research and consult with a financial advisor before making investment decisions.')
-
-            if st.button('Run Signal Searcher', help='Click to scan the S&P 500 for potential buy opportunities'):
-
-                result = market_screener()
-                if result:
-                    ticker, verdict = result
-                    st.success(
-                        f'Potential Buy Opportunity Found: {ticker} - Verdict: {verdict}')
-                else:
-                    st.info('No Buy Opportunities Found at this time.')
-
         with st.sidebar.expander('How does the prediction work?'):
 
             st.write(
@@ -554,7 +538,7 @@ def tab_network_graph():
                 label="Select a quarter to display the network graph from", options=network_quarter_options)
             if st.button("Go", key="Network go button"):
                 fig_network = pio.read_json(
-                    f"personal_projects/stock_crypto/data_saved/correlation_json/{network_quarter_choice}.json")
+                    f"stock_crypto/data_saved/correlation_json/{network_quarter_choice}.json")
 
         if fig_network is not None:
             st.plotly_chart(fig_network)
