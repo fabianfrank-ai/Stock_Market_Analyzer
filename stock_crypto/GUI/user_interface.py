@@ -441,11 +441,11 @@ def tab_heatmap():
                          .map(ema_color, subset=['EMA Diff'])
                          .map(macd_color, subset=['MACD Diff'])
                          .map(atr_color, subset=['Risk']))
-        heatmap_csv = st.session_state.heatmap_data.to_csv(
-                    index=False).encode('utf-8')
-        st.download_button(label="Export Heatmap as CSV",
-                                   data=heatmap_csv, file_name="Heatmap.csv", mime="text/csv")
-        st.info("Note: Historical data uses SMA20 and SMA50 for calculations instead of SMA30 and SMA100 to better fit the shorter timeframes")
+            heatmap_csv = st.session_state.heatmap_data.to_csv(
+                        index=False).encode('utf-8')
+            st.download_button(label="Export Heatmap as CSV",
+                                    data=heatmap_csv, file_name="Heatmap.csv", mime="text/csv")
+            st.info("Note: Historical data uses SMA20 and SMA50 for calculations instead of SMA30 and SMA100 to better fit the shorter timeframes")
 
 
 def tab_prediction(data_pred, data, timeframe):
