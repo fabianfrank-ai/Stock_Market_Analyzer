@@ -1,9 +1,6 @@
 # chatgpt was used to suggest equations for suitable indicatiors
 import pandas as pd
 
-sma = pd.DataFrame()
-crossings_data = []
-
 
 def sma(data, window):
     """Calculate Simple Moving Average (SMA)"""
