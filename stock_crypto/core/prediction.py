@@ -61,7 +61,7 @@ def retreive_data(data):
 
 def prediction(data, timeframe):
     '''Create a rough estimate of how the future price might develop'''
-
+    # copy data to avoid modifying original dataframe
     data_pred = data.copy()
 
     std = data_pred['Close'].rolling(window=30).std()
