@@ -9,20 +9,34 @@ The application runs in the browser using Streamlit and requires no complex setu
 
 ### 📊 Market & Data Analysis
 - Fetch stock data from S&P 500 or user-selected tickers
+
+![alt text](images/Stock_chart.png)
+
 - (Almost) real-time price updates
+
+![alt text](images/real_time_chart.png)
+
 - Comprehensive technical indicators:
   - SMA, EMA, ATR, RSI, MACD and more
+
 - Heatmaps for all S&P 500 tickers
+![alt text](images/heatmap.png)
+
 - Deterministic prediction model
+![alt text](images/prediction.png)
+
 - Extensive verdict system for buy signals
 
 ### 🌐 Interactive Visualizations
 - Fully interactive hotspot network visualization (Plotly)
 - Multiple charting and overview dashboards
 
+![alt text](images/network_graph.png)
+
 ### 💼 Portfolio Tracking
 - Lightweight and easy-to-use portfolio management interface
 - Endless potential for expansion
+![alt text](images/portfolio.png)
 
 ### ⚙️ Robust Error Handling
 - Invalid input does not crash the application
