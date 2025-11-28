@@ -7,44 +7,67 @@ The application runs in the browser using Streamlit and requires no complex setu
 
 ## 🚀 Key Features
 
-### 📊 Market & Data Analysis
-- Fetch stock data from S&P 500 or user-selected tickers
+# 📊 Market & Data Analysis
+### - Fetch stock data from S&P 500 or user-selected tickers<br>
+
+
 
 ![alt text](images/Stock_chart.png)
 
-- (Almost) real-time price updates
+
+
+### - (Almost) real-time price updates
+
+  
 
 ![alt text](images/real_time_chart.png)
 
-- Comprehensive technical indicators:
-  - SMA, EMA, ATR, RSI, MACD and more
 
-- Heatmaps for all S&P 500 tickers
+
+### - Comprehensive technical indicators:
+  - SMA, EMA, ATR, RSI, MACD and more
+ 
+    
+
+### - Heatmaps for all S&P 500 tickers<br>
+
+
 ![alt text](images/heatmap.png)
 
-- Deterministic prediction model
+
+
+### - Deterministic prediction model <br>
+
+
 ![alt text](images/prediction.png)
 
-- Extensive verdict system for buy signals
 
-### 🌐 Interactive Visualizations
-- Fully interactive hotspot network visualization (Plotly)
-- Multiple charting and overview dashboards
+
+### - Extensive verdict system for buy signals
+
+  
+
+# 🌐 Interactive Visualizations
+### - Fully interactive hotspot network visualization (Plotly)
+### - Multiple charting and overview dashboards <br>
+
 
 ![alt text](images/network_graph.png)
 
-### 💼 Portfolio Tracking
+
+
+# 💼 Portfolio Tracking
 - Lightweight and easy-to-use portfolio management interface
-- Endless potential for expansion
+- Endless potential for expansion <br>
 ![alt text](images/portfolio.png)
 
-### ⚙️ Robust Error Handling
+# ⚙️ Robust Error Handling
 - Invalid input does not crash the application
 - Users are informed via clear error messages
 - Users can continue working without restarting
 - Despite precautions, bugs may still occur – please report them
 
-### 🔮 Future Plans
+# 🔮 Future Plans
 - Performance optimization for heatmaps and networks
 - Optional C++ acceleration for heavy computations
 - Upgrade static plots to fully interactive (Matplotlib → Plotly)
