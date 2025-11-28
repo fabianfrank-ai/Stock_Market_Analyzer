@@ -65,6 +65,7 @@ try:
     ema_26 = ema(data, 26)
 
     macd_line, signal_line = macd(data)
+    macd_histogram = macd_line - signal_line
 
     # create the bollinger bands and rsi
     lower_band, upper_band = bollinger_bands(data, 30)
@@ -89,7 +90,6 @@ try:
 # calculate the price change percentage over the selected period
     price_change_data = price_change(data)
 
-
     atr_data = atr(data)
 
 except Exception as e:
@@ -105,7 +105,7 @@ except Exception as e:
 if data is not None and not data.empty:
     try:
         tab_stock_chart(stock, price_change_data, data, selected_indicators, data_sma_30, data_sma_100, crossover_data_sma, crossover_type_sma,
-                        upper_band, lower_band, ema_12, ema_26, crossover_data_ema, crossover_type_ema, macd_line, signal_line, rsi,
+                        upper_band, lower_band, ema_12, ema_26, crossover_data_ema, crossover_type_ema, macd_line, signal_line, macd_histogram, rsi,
                         verdict, atr_data)
         tab_prediction(data_pred_future, data_prediction_now,
                        predicted_time_frame)

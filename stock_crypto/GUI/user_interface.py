@@ -189,7 +189,7 @@ def user_portfolio():
 
 
 def tab_stock_chart(stock, price_change, data, selected_indicators, data_sma_30, data_sma_100, crossover_data_sma, crossover_type_sma,
-                    upper_band, lower_band, ema_12, ema_26, crossover_data_ema, crossover_type_ema, macd_line, signal_line, rsi, verdict, atr):
+                    upper_band, lower_band, ema_12, ema_26, crossover_data_ema, crossover_type_ema, macd_line, signal_line, macd_histogram, rsi, verdict, atr):
     """Use retreived data from main to create plots for the data and create heatmap if necessary"""
 
     with tab_long:
@@ -292,6 +292,8 @@ def tab_stock_chart(stock, price_change, data, selected_indicators, data_sma_30,
                      label='MACD Line', color='#00ff00')
             ax2.plot(signal_line.index, signal_line,
                      label='Signal Line', color='#ff0000')
+            ax2.bar(macd_histogram.index, macd_histogram,
+                    label='MACD Histogram', color="#d400ff", alpha=0.5)
             ax2.axhline(0, color='grey', linestyle='--')
             ax2.set_ylabel('MACD')
 
