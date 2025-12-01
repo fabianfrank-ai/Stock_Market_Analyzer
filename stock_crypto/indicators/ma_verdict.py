@@ -7,8 +7,6 @@ class ma_verdict:
         self.ma_long = ma_long
         self.price = price
 
-        print(self.price, self.ma_short.iloc[-1], self.ma_long.iloc[-1])
-
         buyer_score = 0
         buyer_score = self.difference_verdict()
         buyer_score += self.change_verdict()
@@ -16,17 +14,15 @@ class ma_verdict:
 
     def get_difference(self, price, ma):
         '''Calculate the percentage difference between two values.'''
-        print("Calculating percentage difference...")
         return ((price - ma) / ma) * 100
 
     def difference_verdict(self):
         '''Generate verdict based on the difference between short and long moving averages.'''
-        print("Calculating difference verdict...")
 
         buyer_score = 0
         # Calculate the percentage differences
         short_diff = self.get_difference(self.price, self.ma_long.iloc[-1])
-        print(f"Short MA Difference: {short_diff}%")
+
         long_diff = self.get_difference(self.price, self.ma_short.iloc[-1])
 
         # Determine verdict based on the differences

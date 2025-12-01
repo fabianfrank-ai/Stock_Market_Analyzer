@@ -5,10 +5,11 @@
 # If none of the indicators indicate buy/sell, the verdict is hold
 # Note: This is a very simple approach and should not be used for real trading decisions. It is just for educational purposes.
 from indicators.ma_verdict import ma_verdict
+from indicators.rsi_verdict import rsi_verdict
 
 
 class Verdict:
-    def __init__(self, data, sma_long, sma_short):
+    def __init__(self, data, sma_long, sma_short, ema_Long, ema_short, rsi):
         '''Initialize the Verdict class with necessary indicators.'''
         # Store the latest values of the indicators
         self.price = data['Close'].iloc[-1]
@@ -16,19 +17,27 @@ class Verdict:
         self.sma_short = sma_short
         self.sma_long = sma_long
         self.buyer_score = 0
-        print("Calculating MA verdict...")
 
+        # Calculate SMA verdict
         ma_verdict_sma = ma_verdict(
             self.price, self.sma_short, self.sma_long)
         self.buyer_score += ma_verdict_sma.buyer_score
+        # Calculate EMA verdict
+        ma_verdict_ema = ma_verdict(
+            self.price, ema_short, ema_Long)
+        self.buyer_score += ma_verdict_ema.buyer_score
+
+        # Calculate RSI verdict
+        rsi_verdict_instance = rsi_verdict(rsi)
+        self.buyer_score += rsi_verdict_instance.buyer_score
 
         self.verdict = self.get_verdict()
 
     def get_verdict(self):
         '''Generate the final verdict based on the buyer score.'''
-        if self.buyer_score >= 2:
+        if self.buyer_score >= 6:
             return "Buy"
-        elif self.buyer_score <= -2:
+        elif self.buyer_score <= -6:
             return "Sell"
         else:
             return "Hold"

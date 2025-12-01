@@ -107,8 +107,8 @@ def heatmap(start, end):
             macd_data.append(macd_difference)
 
             # generate and append the verdict for the ticker
-            verdict_signal = Verdict(data, sma(data, 30), sma(
-                data, 100))
+            verdict_signal = Verdict(data, sma(data, 100), sma(
+                data, 30), ema(data, 26), ema(data, 12), rsi(data, 14))
             verdict.append(verdict_signal.verdict)
 
             atr_value = atr(data)
@@ -198,8 +198,8 @@ def heatmap_portfolio(portfolio):
             macd_data.append(macd_difference)
 
             # generate and append the verdict for the ticker
-            verdict.append(Verdict(data, sma(data, 30), sma(
-                data, 100)))
+            verdict.append(Verdict(data, sma(data, 100), sma(
+                data, 30), ema(data, 26), ema(data, 12), rsi(data, 14)).verdict)
 
             atr_data.append(atr(data))
 

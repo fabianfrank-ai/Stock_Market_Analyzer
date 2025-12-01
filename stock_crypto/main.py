@@ -73,7 +73,7 @@ try:
 
     # create a verdict for the data(buy/hold/sell)
     verdict = Verdict(
-        data, data_sma_100, data_sma_30)
+        data, data_sma_100, data_sma_30, ema_26, ema_12, rsi)
     verdict = verdict.verdict
 
     crossover_type_sma = moving_average_crossover(
