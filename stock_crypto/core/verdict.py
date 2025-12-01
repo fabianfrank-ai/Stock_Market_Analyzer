@@ -11,7 +11,7 @@ from indicators_verdict.bollinger_verdict import bollinger_verdict
 
 
 class Verdict:
-    def __init__(self, data, sma_long, sma_short, ema_Long, ema_short, rsi, signal_line, macd_line, lower_band, upper_band):
+    def __init__(self, data, sma_long, sma_short, ema_Long, ema_short, rsi, signal_line, macd_line, lower_band, upper_band, atr):
         '''Initialize the Verdict class with necessary indicators.'''
         # Store the latest values of the indicators
         self.price = data['Close'].iloc[-1]
@@ -42,17 +42,25 @@ class Verdict:
             self.price, lower_band, upper_band, sma_long)
         self.buyer_score += bollinger_verdict_instance.buyer_score
 
+        # If ATR is high(High volatility), reduce the score impact
+        if atr > 70:
+            self.buyer_score *= 0.8
+        elif atr < 30:
+            self.buyer_score *= 1.2
+        else:
+            pass
+
         self.verdict = self.get_verdict()
 
     def get_verdict(self):
         '''Generate the final verdict based on the buyer score.'''
-        if self.buyer_score >= 20:
+        if self.buyer_score >= 18:
             return "Strong Buy"
-        elif self.buyer_score <= -20:
+        elif self.buyer_score <= -18:
             return "Strong Sell"
-        elif 12 <= self.buyer_score < 20:
+        elif 10 <= self.buyer_score < 18:
             return "Buy"
-        elif -20 < self.buyer_score <= -12:
+        elif -18 < self.buyer_score <= -10:
             return "Sell"
         else:
             return "Hold"
