@@ -205,8 +205,6 @@ def tab_stock_chart(stock, price_change, data, selected_indicators, data_sma_30,
         ax2.grid()
         ax2.set_ylabel('RSI')
 
-        # HEATMAP HAS BEEN MOVED ->tab_heatmap()
-
         # plot the data
         # check if the price change is positive or negative and change the background color accordingly
         if price_change > 0:

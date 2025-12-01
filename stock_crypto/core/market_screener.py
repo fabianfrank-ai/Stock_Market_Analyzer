@@ -5,7 +5,7 @@ import numpy as np
 import urllib.request
 from data.fetch_data import fetch_stock_data, fetch_stock_data_set_dates, fetch_multiple_stocks_data
 from core.indicators import sma, bollinger_bands, rsi, ema, macd, atr
-from core.verdict import generate_verdict
+from core.verdict import Verdict
 
 
 def get_tickers():
@@ -22,14 +22,15 @@ def get_tickers():
     # wikipedia uses dots in some ticker symbols, but yfinance needs dashes (e.g. BF.B -> BF-B)
     sp500_tickers = [t.replace(".", "-") for t in sp500_tickers]
 
-
     # fetch data for all tickers at once to improve performance
-    ticker_dataframe = fetch_multiple_stocks_data(sp500_tickers, period="6mo", interval='1d')
+    ticker_dataframe = fetch_multiple_stocks_data(
+        sp500_tickers, period="6mo", interval='1d')
     dfs = {
         # create a dictionary of dataframes for each ticker
         ticker: ticker_dataframe[ticker] for ticker in sp500_tickers if ticker in ticker_dataframe.columns.get_level_values(0)
     }
     return dfs
+
 
 def heatmap(start, end):
     """Generate a Dataframe of S&P 500 companies based on their gain/loss percentage over the last day."""
@@ -77,14 +78,14 @@ def heatmap(start, end):
             if data is None or len(data) < 2:
                 print(f"Not enough data for {ticker}")
                 continue
-            
+
             # append all the data to the respective lists
             ticker_data.append(ticker)
             change_data.append(latest_change)
 
             ema_percentage = (
                 ema(data, 12).iloc[-1] - ema(data, 26).iloc[-1]) / ema(data, 26).iloc[-1] * 100
-            ema_percentage = round(ema_percentage, 2)         
+            ema_percentage = round(ema_percentage, 2)
             sma_percentage = round(sma_percentage, 2)
 
             macd_line, signal_line = macd(data)
@@ -100,15 +101,15 @@ def heatmap(start, end):
             rsi_value = rsi(data, 14).iloc[-1]
             rsi_value = round(rsi_value, 2)
 
-
             bollinger_data.append(bollinger_percentage)
             rsi_data.append(rsi_value)
             ema_data.append(ema_percentage)
             macd_data.append(macd_difference)
 
             # generate and append the verdict for the ticker
-            verdict.append(generate_verdict(data, sma(data, 30), sma(
-                data, 100), *bollinger_bands(data, 30), rsi(data, 14)))
+            verdict_signal = Verdict(data, sma(data, 30), sma(
+                data, 100))
+            verdict.append(verdict_signal.verdict)
 
             atr_value = atr(data)
             atr_value = round(atr_value, 2)
@@ -197,8 +198,8 @@ def heatmap_portfolio(portfolio):
             macd_data.append(macd_difference)
 
             # generate and append the verdict for the ticker
-            verdict.append(generate_verdict(data, sma(data, 30), sma(
-                data, 100), *bollinger_bands(data, 30), rsi(data, 14)))
+            verdict.append(Verdict(data, sma(data, 30), sma(
+                data, 100)))
 
             atr_data.append(atr(data))
 
@@ -214,7 +215,7 @@ def heatmap_portfolio(portfolio):
                 'Verdict': verdict,
                 'Risk': atr_data
             })
-        
+
         # Print any errors and continue with the next ticker
         except Exception as e:
             print(f"Error processing {ticker}: {e}")
@@ -227,7 +228,7 @@ def heatmap_portfolio(portfolio):
 
 def correlations(start, end):
     '''Calculates the correlations of the S&P 500 stock movements within the past 6 months'''
-    
+
     dfs = get_tickers()
 
     data_dictionary = {}
