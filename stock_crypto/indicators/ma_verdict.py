@@ -10,6 +10,8 @@ class ma_verdict:
         buyer_score = 0
         buyer_score = self.difference_verdict()
         buyer_score += self.change_verdict()
+        buyer_score += self.crossover_verdict()
+
         self.buyer_score = buyer_score
 
     def get_difference(self, price, ma):
@@ -68,5 +70,17 @@ class ma_verdict:
             buyer_score += 1
         elif long_change < 0:
             buyer_score -= 1
+
+        return buyer_score
+
+    def crossover_verdict(self):
+        '''Generate verdict based on moving average crossover.'''
+        buyer_score = 0
+        # Check for crossover -> very strong buy/sell signal
+
+        if self.ma_short.iloc[-2] < self.ma_long.iloc[-2] and self.ma_short.iloc[-1] > self.ma_long.iloc[-1]:
+            buyer_score += 5
+        elif self.ma_short.iloc[-2] > self.ma_long.iloc[-2] and self.ma_short.iloc[-1] < self.ma_long.iloc[-1]:
+            buyer_score -= 5
 
         return buyer_score
