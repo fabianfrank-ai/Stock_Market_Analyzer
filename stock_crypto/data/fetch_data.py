@@ -3,6 +3,7 @@ import pandas as pd
 
 # https://algotrading101.com/learn/yahoo-finance-api-guide/
 
+
 def fetch_stock_data(ticker_symbol, period, interval):
     """Fetch historical stock data for a given ticker symbol and period."""
 
@@ -32,9 +33,20 @@ def fetch_stock_data_set_dates(ticker_symbol, start, end):
 
         return None
 
+
 def fetch_multiple_stocks_data(ticker_symbols, period, interval):
     """Fetch historical stock data for multiple ticker symbols."""
     # get data for multiple tickers, way way way faster than looping through them one by one
-    tickers = yf.download(ticker_symbols, period=period, interval=interval, group_by='ticker', threads=True, auto_adjust=True, progress=False)
-    
+    tickers = yf.download(ticker_symbols, period=period, interval=interval,
+                          group_by='ticker', threads=True, auto_adjust=True, progress=False)
+
+    return tickers
+
+
+def fetch_multiple_stocks_data_set_dates(ticker_symbols, start, end):
+    """Fetch historical stock data for multiple ticker symbols within a date range."""
+    # get data for multiple tickers, way way way faster than looping through them one by one
+    tickers = yf.download(ticker_symbols, start=start, end=end,
+                          group_by='ticker', threads=True, auto_adjust=True, progress=False)
+
     return tickers
