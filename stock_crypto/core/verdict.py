@@ -4,12 +4,13 @@
 # If only 1,2 indicator indicates buy/sell, the verdict is hold
 # If none of the indicators indicate buy/sell, the verdict is hold
 # Note: This is a very simple approach and should not be used for real trading decisions. It is just for educational purposes.
-from indicators.ma_verdict import ma_verdict
-from indicators.rsi_verdict import rsi_verdict
+from indicators_verdict.ma_verdict import ma_verdict
+from indicators_verdict.rsi_verdict import rsi_verdict
+from indicators_verdict.macd_verdict import macd_verdict
 
 
 class Verdict:
-    def __init__(self, data, sma_long, sma_short, ema_Long, ema_short, rsi):
+    def __init__(self, data, sma_long, sma_short, ema_Long, ema_short, rsi, signal_line, macd_line):
         '''Initialize the Verdict class with necessary indicators.'''
         # Store the latest values of the indicators
         self.price = data['Close'].iloc[-1]
@@ -31,13 +32,21 @@ class Verdict:
         rsi_verdict_instance = rsi_verdict(rsi)
         self.buyer_score += rsi_verdict_instance.buyer_score
 
+        # Calculate MACD verdict
+        macd_verdict_instance = macd_verdict(macd_line, signal_line)
+        self.buyer_score += macd_verdict_instance.buyer_score
+
         self.verdict = self.get_verdict()
 
     def get_verdict(self):
         '''Generate the final verdict based on the buyer score.'''
-        if self.buyer_score >= 6:
+        if self.buyer_score >= 13:
+            return "Strong Buy"
+        elif self.buyer_score <= -13:
+            return "Strong Sell"
+        elif 7 <= self.buyer_score < 13:
             return "Buy"
-        elif self.buyer_score <= -6:
+        elif -13 < self.buyer_score <= -7:
             return "Sell"
         else:
             return "Hold"
