@@ -1,7 +1,7 @@
 import streamlit as st
 from data.fetch_data import fetch_stock_data
 from core.indicators import sma,  bollinger_bands, rsi, price_change, ema, macd, moving_average_crossover, atr
-from core.verdict import generate_verdict
+from core.verdict import Verdict
 from GUI.user_interface import sidebar, user_input, user_portfolio, tab_stock_chart, header, tab_init, tab_heatmap, tab_portfolio_calculator, tab_prediction, tab_network_graph, tab_short_term
 from core.prediction import prediction
 from core.portfolio import generate_portfolio
@@ -72,8 +72,9 @@ try:
     rsi = rsi(data, 14)
 
     # create a verdict for the data(buy/hold/sell)
-    verdict = generate_verdict(
-        data, data_sma_30, data_sma_100, lower_band, upper_band, rsi)
+    verdict = Verdict(
+        data, data_sma_100, data_sma_30, ema_26, ema_12, rsi, signal_line, macd_line, lower_band, upper_band, atr(data))
+    verdict = verdict.verdict
 
     crossover_type_sma = moving_average_crossover(
         data, data_sma_30, data_sma_100)

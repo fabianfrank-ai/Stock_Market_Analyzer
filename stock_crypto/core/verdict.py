@@ -4,107 +4,63 @@
 # If only 1,2 indicator indicates buy/sell, the verdict is hold
 # If none of the indicators indicate buy/sell, the verdict is hold
 # Note: This is a very simple approach and should not be used for real trading decisions. It is just for educational purposes.
-from core.indicators import ema, macd
-import pandas as pd
+from indicators_verdict.ma_verdict import ma_verdict
+from indicators_verdict.rsi_verdict import rsi_verdict
+from indicators_verdict.macd_verdict import macd_verdict
+from indicators_verdict.bollinger_verdict import bollinger_verdict
 
 
-def generate_verdict(data, short_sma, long_sma, lower_band, upper_band, rsi):
-    """Generate a trading verdict based on multiple technical indicators."""
+class Verdict:
+    def __init__(self, data, sma_long, sma_short, ema_Long, ema_short, rsi, signal_line, macd_line, lower_band, upper_band, atr):
+        '''Initialize the Verdict class with necessary indicators.'''
+        # Store the latest values of the indicators
+        self.price = data['Close'].iloc[-1]
 
-    # at the beginning of the function, set the signals to 0, as there is no data yet
-    buy_signals = 0
-    sell_signals = 0
+        self.sma_short = sma_short
+        self.sma_long = sma_long
+        self.buyer_score = 0
 
-    # SMA signal
-    # as market prices may vary, we will use the percantage difference between long and short SMA
-    sma_diff = (short_sma - long_sma) / long_sma * 100
+        # Calculate SMA verdict
+        ma_verdict_sma = ma_verdict(
+            self.price, self.sma_short, self.sma_long)
+        self.buyer_score += ma_verdict_sma.buyer_score
+        # Calculate EMA verdict
+        ma_verdict_ema = ma_verdict(
+            self.price, ema_short, ema_Long)
+        self.buyer_score += ma_verdict_ema.buyer_score
 
-   # use 2 as threshold to decide whether the difference between sma differences is noteworthy enough
-   # NEW : stronger signals for bigger differences - for ALL indicators
+        # Calculate RSI verdict
+        rsi_verdict_instance = rsi_verdict(rsi)
+        self.buyer_score += rsi_verdict_instance.buyer_score
 
-    if sma_diff.iloc[-1] > 2 and sma_diff.iloc[-1] < 8:
-        buy_signals += 1
-    elif sma_diff.iloc[-1] < -2:
-        sell_signals += 1
-    elif sma_diff.iloc[-1] >= 10:
-        buy_signals += 3
-    elif sma_diff.iloc[-1] <= -10:
-        sell_signals += 3
+        # Calculate MACD verdict
+        macd_verdict_instance = macd_verdict(macd_line, signal_line)
+        self.buyer_score += macd_verdict_instance.buyer_score
 
-    else:
-        pass  # No signal from SMA
+        # Calculate Bollinger Bands verdict
+        bollinger_verdict_instance = bollinger_verdict(
+            self.price, lower_band, upper_band, sma_long)
+        self.buyer_score += bollinger_verdict_instance.buyer_score
 
-    # Bollinger Bands signal
-    bollinger_percentage = (data['Close'].iloc[-1] - lower_band.iloc[-1]
-                            ) / (upper_band.iloc[-1] - lower_band.iloc[-1])
+        # If ATR is high(High volatility), reduce the score impact
+        if atr > 70:
+            self.buyer_score *= 0.8
+        elif atr < 30:
+            self.buyer_score *= 1.2
+        else:
+            pass
 
-    if bollinger_percentage < 0.2:
-        sell_signals += 3
-    elif bollinger_percentage >= 0.2 and bollinger_percentage <= 0.4:
-        sell_signals += 1
-    elif bollinger_percentage >= 0.4 and bollinger_percentage <= 0.6:
-        buy_signals += 1
-    elif bollinger_percentage > 0.8:
-        buy_signals += 3
+        self.verdict = self.get_verdict()
 
-    # RSI signal
-    if rsi.iloc[-1] > 80:
-        sell_signals += 3
-    elif rsi.iloc[-1] > 60 and rsi.iloc[-1] <= 80:
-        sell_signals += 1
-    elif rsi.iloc[-1] >= 20 and rsi.iloc[-1] <= 40:
-        buy_signals += 1
-    elif rsi.iloc[-1] < 20:
-        buy_signals += 3
-    else:
-        pass
-    # No signal from RSI
-
-    # EMA signal
-    ema_short = ema(data, 12)
-    ema_long = ema(data, 26)
-
-    ema_percentage = (ema_short - ema_long) / ema_long * 100
-
-    if ema_percentage.iloc[-1] > 2 and ema_percentage.iloc[-1] < 8:
-        buy_signals += 1
-    elif ema_percentage.iloc[-1] < -2:
-        sell_signals += 1
-    elif ema_percentage.iloc[-1] >= 10:
-        buy_signals += 3
-    elif ema_percentage.iloc[-1] <= -10:
-        sell_signals += 3
-    else:
-        pass
-     # No signal from EMA
-
-    # MACD signal
-    macd_line, signal_line = macd(data)
-
-    macd_difference = macd_line - signal_line
-    macd_scale = (macd_difference / signal_line) * 100
-
-    if macd_scale.iloc[-1] > 2 and macd_scale.iloc[-1] < 9:
-        buy_signals += 1
-    elif macd_scale.iloc[-1] < -2 and macd_scale.iloc[-1] > -9:
-        sell_signals += 1
-    elif macd_scale.iloc[-1] >= 10:
-        buy_signals += 3
-    elif macd_scale.iloc[-1] <= -10:
-        sell_signals += 3
-    else:
-        pass
-
-    # No signal from MACD
-
-    # return verdict
-    if buy_signals >= 6 and buy_signals < 11:
-        return "Buy"
-    if buy_signals >= 12:
-        return "Strong Buy"
-    elif sell_signals >= 6 and sell_signals < 11:
-        return "Sell"
-    elif sell_signals >= 12:
-        return "Strong Sell"
-    else:
-        return "Hold"
+    def get_verdict(self):
+        '''Generate the final verdict based on the buyer score.'''
+        if self.buyer_score >= 18:
+            return "Strong Buy"
+        elif self.buyer_score <= -18:
+            return "Strong Sell"
+        elif 10 <= self.buyer_score < 18:
+            return "Buy"
+        elif -18 < self.buyer_score <= -10:
+            return "Sell"
+        else:
+            return "Hold"
