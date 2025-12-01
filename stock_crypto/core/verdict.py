@@ -7,10 +7,11 @@
 from indicators_verdict.ma_verdict import ma_verdict
 from indicators_verdict.rsi_verdict import rsi_verdict
 from indicators_verdict.macd_verdict import macd_verdict
+from indicators_verdict.bollinger_verdict import bollinger_verdict
 
 
 class Verdict:
-    def __init__(self, data, sma_long, sma_short, ema_Long, ema_short, rsi, signal_line, macd_line):
+    def __init__(self, data, sma_long, sma_short, ema_Long, ema_short, rsi, signal_line, macd_line, lower_band, upper_band):
         '''Initialize the Verdict class with necessary indicators.'''
         # Store the latest values of the indicators
         self.price = data['Close'].iloc[-1]
@@ -36,17 +37,22 @@ class Verdict:
         macd_verdict_instance = macd_verdict(macd_line, signal_line)
         self.buyer_score += macd_verdict_instance.buyer_score
 
+        # Calculate Bollinger Bands verdict
+        bollinger_verdict_instance = bollinger_verdict(
+            self.price, lower_band, upper_band, sma_long)
+        self.buyer_score += bollinger_verdict_instance.buyer_score
+
         self.verdict = self.get_verdict()
 
     def get_verdict(self):
         '''Generate the final verdict based on the buyer score.'''
-        if self.buyer_score >= 13:
+        if self.buyer_score >= 20:
             return "Strong Buy"
-        elif self.buyer_score <= -13:
+        elif self.buyer_score <= -20:
             return "Strong Sell"
-        elif 7 <= self.buyer_score < 13:
+        elif 12 <= self.buyer_score < 20:
             return "Buy"
-        elif -13 < self.buyer_score <= -7:
+        elif -20 < self.buyer_score <= -12:
             return "Sell"
         else:
             return "Hold"
