@@ -1,4 +1,3 @@
-# Wanted to change to a class with everything, don't like it yet, I need convincing
 
 import streamlit as st
 import pandas as pd
@@ -18,10 +17,24 @@ from core.verdict import Verdict
 
 
 class GUI:
-    '''Class to handle all GUI related functions and code'''
+    '''
+    Creates a GUI with data provided from the other functions
+
+    This module creates a streamlit GUI, fetches data in accordance with user input and uses them to calculate and displays it to the user
+    I tried working on error handling and I am sure there might be ways to break the code, but as far as I have checked I already iradicated every  
+    possibility and it should run well and user-friendly.
+
+    The GUI consists of 5 Tabs, each having their own special plots, dataframes or similar.
+
+    Author: Fabian Frank
+    Date: 2nd of December 2025
+    '''
 
     def __init__(self):
-        '''Initialize the GUI class and set dark mode for plots'''
+        '''
+        Initialises the GUI class, sets the colour theme for matplotlib and ploty, initialises session state, so user input won't get deleted,
+        and gives the project structure, by arranging the functions of each area. It also plays an important role in error handling by detecting mainly missing
+        values and giving user feedback that something might've gone wrong.'''
 
         # =============================================================================================
         #                           CONFIGURATION
@@ -107,10 +120,10 @@ class GUI:
 # afterwards take the data and calculate the indicators, been in Main before that but now it's here
 # ======================================================================================================
 
-
     def prepare_data(self):
-        '''Prepare the data from the user input'''
-        # fetch the stock data using functions defined in fetch_data.py
+        '''
+        Prepare the data from the user input. Here we fetch data 
+        '''
         # here we fetch 3 different data because user can use 3 different inputs, so for each case we need
         # a different dataset/frame
         self.data = fetch_stock_data(self.stock, f'{self.period}y', '1d')
@@ -120,35 +133,33 @@ class GUI:
             self.stock_short, f'{self.timeframe_short}', '1m')
 
     def calculate_data(self):
-        '''Take the user input and cook something up, was in main before but it's here now'''
-        try:
-            # create the smas, ema, macd and other indicators
-            # explanations can be found in the notebooks on calculations
-            # the functions are all in the indicator tab
+        '''
+        Take the user input and cook something up, was in main before but it's here now.
+        It uses defs and classes from different files and uses data from yfinance to calculate indicators, which will later be used for visualization. 
+        also some error handling, if, let's say something goes wrong, I get feedback on the terminal as to where the mistake happens.
 
-            # create data for SMA, one long and one short
+        If you are interested in indicators, you can have a look at the indicators_guide notebook in notebooks/ , there I explain what the code does and what the indicators show, but for 
+        here we just use the functionality and the result, I don't think I need to explain them further 
+        '''
+        try:
+
             self.data_sma_30 = sma(self.data, 30)
             self.data_sma_100 = sma(self.data, 100)
 
-            # create data for ema, one long and one short
             self.ema_12 = ema(self.data, 12)
             self.ema_26 = ema(self.data, 26)
 
-            # create histograms and lines for macd
             self.macd_line, self.signal_line = macd(self.data)
             self.macd_histogram = self.macd_line - self.signal_line
 
-            # create the bollinger bands and rsi
             self.lower_band, self.upper_band = bollinger_bands(
                 self.data, 30)
             self.rsi_data = rsi(self.data, 14)
 
-            # create a verdict for the data(buy/hold/sell)
             verdict = Verdict(
                 self.data, self.data_sma_100, self.data_sma_30, self.ema_26, self.ema_12, self.rsi_data, self.signal_line, self.macd_line, self.lower_band, self.upper_band, atr(self.data))
             self.verdict = verdict.verdict
 
-            # create crossovers(coordinates), so golden and death crosses wherever ma's meet
             self.crossover_type_sma = moving_average_crossover(
                 self.data, self.data_sma_30, self.data_sma_100)
             self.crossover_data_sma = self.crossover_type_sma.index
@@ -157,7 +168,6 @@ class GUI:
                 self.data, self.ema_12, self.ema_26)
             self.crossover_data_ema = self.crossover_type_ema.index
 
-            # calculate the price change percentage over the selected period and atr
             self.price_change_data = price_change(self.data)
             self.atr_data = atr(self.data)
 
@@ -165,6 +175,7 @@ class GUI:
             # if something goes wrong, here is the error message for debugging, so I know what's going on
             print(f"Error,{e}")
 
+        # also some basic error handling, in case input is weird or something
         try:
             self.data_pred_future = prediction(
                 self.data_prediction_now, self.predicted_time_frame)
@@ -178,7 +189,11 @@ class GUI:
 # ==============================================================================================================|
 
     def tab_init(self):
-        '''Initializes all the tabs used for the GUI for the User to switch between views and features'''
+        '''
+        Initializes all the tabs used for the GUI for the User to switch between views and features.
+        Creates 5 tabs via streamlit (they will later get sub-tabs, in a future update I might move the code to here, but for now we just initialize the main tabs). 
+        Each tab has their own respective funtion and output (both numbers and plots)
+        '''
 
         # create tabs with streamlit
         self.tab1, self.tab2, self.tab3, self.tab4, self.tab5 = st.tabs(["Stock Prices 📈", "Heatmap 🟩🟨🟥",
@@ -190,7 +205,8 @@ class GUI:
  # =============================================================================================================
 
     def header(self):
-        '''Create a header for the entire web page and change color theme'''
+        '''Create a header for the entire web page '''
+
         # Streamlit app layout with title and description
         st.title('Stock Price Viewer')
         st.write(
@@ -203,10 +219,11 @@ class GUI:
 # ================================================================================================================
 
     def sidebar(self):
-        '''Create a sidebar with useful texts and information and some instructions'''
-
-        # sidebar also defines some values like the indicators
-        # not much code, just text here
+        '''
+        Here we create a sidebar via streamlit, there are not real data or functionalities, It's basically just information about the project, some indicators and 
+        also have instructions for the user, for them to look at what they could do (IF it wasn't clear - I think the website is pretty intuitive)
+        I noticed some things are depreciated, as the project has changed a lot, I will try to make time to rework it a bit.
+        '''
 
         with st.sidebar.expander('About this app'):
 
@@ -286,26 +303,34 @@ class GUI:
 # Here the user can just enter his preferred values in everything he wants and get further opportunities to analyze it to his liking
 # ======================================================================================================================================
 
-
     def user_input(self):
-        '''Create user interface for user to chose his own data'''
-        # create sliders for user input(time range and selected stock)
-
+        '''
+        Create user interface for user to chose his own data, for mainly stock plots, predictions, long- and short term plots
+        As I try to make it useful tool, It's important to add some interactivity with data, as it makes it easier to analyze.
+        This basically decides over the structure of the data that's being displayed, from stock timeframes to indicators, we make
+        use of streamlit widgets and safe the user input as variables for the class to access them 
+        '''
         with self.tab1:
             self.tab_long, self.tab_short = st.tabs(
                 ["Long term prices", "Short term prices"])
+
             with self.tab_long:
+
                 self.period = st.slider('Select Period', min_value=1, max_value=20, value=10,
                                         help='Select the number of years to fetch data for (1-20 years)')
+
                 self.stock = st.text_input('Select Stock ticker (AMZN, MSFT, META)',
                                            help='Select the stock symbol to fetch data for', value='AMZN')
-                self.options = ['SMA', 'Bollinger Bands', 'EMA', 'MACD', 'RSI']
+
+                options = ['SMA', 'Bollinger Bands', 'EMA', 'MACD', 'RSI']
                 self.selected_indicators = st.multiselect(
-                    'Select Indicators to Display', self.options, default=['SMA', 'Bollinger Bands', 'RSI'])
+                    'Select Indicators to Display', options, default=['SMA', 'Bollinger Bands', 'RSI'])
 
             with self.tab_short:
+
                 self.stock_short = st.text_input('Select Stock ticker (AMZN, MSFT, META)',
                                                  help='Select the stock symbol uto fetch data for', value='AMZN', key="Input box for short term analysis")
+
                 self.options_pills = (
                     ["1d", "2d", "3d", "4d", "5d", "6d", '7d'])
                 self.timeframe_short = st.pills(
@@ -314,13 +339,20 @@ class GUI:
         with self.tab3:
             self.period_prediction = st.slider('Select Period', min_value=1, max_value=20, value=10,
                                                help=' Select the number of years to fetch data for (1-20 years)', key="Slider Tab 3")
+
             self.predicted_time_frame = st.slider('Select the timeframe you want to predict', min_value=5, max_value=120,
                                                   value=60, help='Decides the length of the prediction. NOTE: Larger timeframes might be unrealistic')
+
             self.stock_prediction = st.text_input('Select Stock ticker (AMZN, MSFT, META)',
                                                   help='Select the stock symbol to fetch data for', value='AMZN', key="Input tab 3")
 
     def user_portfolio(self):
-        ''' Use this to get the data from the user for the portfolio'''
+        '''
+        This is also for getting data from the user, however due to the difference of structure, it is a different approach
+        It creates 3 text inputs where the user can input anything he want. Afterwards we check and if all inputs are filled out, a add button appears, which adds the data and creates
+        a dataframe.
+        There is also error-handling, in case of user input being false, we chack if the user entered numbers and valid tickers and return an error if the user messed up
+        '''
 
         col1, col2, col3 = st.columns(3)
 
@@ -334,6 +366,8 @@ class GUI:
         with col3:
             self.buy_in_price = st.text_input(" Enter Buy-in price")
 
+        # error handling again: check if all inputs are filled out and afterwards if the input is correct: Are there valid tickers
+        # and numbers in fields where numbers are necessary
         if self.stock_buy and self.buy_in_price and self.stock_amount:
             if st.button("Add"):
                 # only create dataframe if input is valid, otherwise return an error
@@ -342,14 +376,25 @@ class GUI:
                     self.buy_in_price = float(self.buy_in_price)
                     fetch_stock_data(self.stock_buy, '30d', '1d')
 
+                    # create datafrane from the input
                     st.session_state.portfolio_df = generate_portfolio(
                         self.stock_buy, self.stock_amount, self.buy_in_price)
 
                 except Exception as e:
                     st.error("Uh oh! Please check your input!")
 
+# =======================================================================================================================================
+#                   DATA VISUALIZATION
+# Take the calculated values and data based on user input and display them to the user in respective tabs
+# =======================================================================================================================================
+
     def tab_stock_chart(self):
-        """Use retreived data from main to create plots for the data and create heatmap if necessary"""
+        """
+        In tab_long we create two seperate plots for data visualization of long term stocks
+        First plot will show the data graph, movement, price change and indicators like the SMA, EMA, Bollinger,
+        plot two will consist of MACD and RSI, as values of those are relative and won't be displayed well in the main plot.
+        We take advantage of matplotlib for visualisation here.
+        """
 
         with self.tab_long:
 
@@ -364,8 +409,6 @@ class GUI:
             ax2.grid()
             ax2.set_ylabel('RSI')
 
-            # plot the data
-            # check if the price change is positive or negative and change the background color accordingly
             if self.price_change_data > 0:
 
                 # dark green background for positive price change
@@ -380,7 +423,6 @@ class GUI:
                 ax.plot(
                     self.data.index, self.data['Close'], label=f'Close Price \u25BC {price_change}%', color='#ff4d4d')
 
-            # plot the selected indicators, if any are selected
             if 'SMA' in self.selected_indicators:
 
                 ax.plot(self.data_sma_100.index, self.data_sma_100,
@@ -388,7 +430,6 @@ class GUI:
                 ax.plot(self.data_sma_30.index, self.data_sma_30, label='30 Day SMA',
                         color="#ffc800", linestyle='dashdot')
 
-                # check if user chose sma as indicator
                 if self.crossover_data_sma is not None:
 
                     # extract date and crossover type
@@ -399,9 +440,12 @@ class GUI:
                         if ctype == 'Golden Cross':
                             # there was some trouble with plotting the markers directly on the date, so I had to find the closest date in the data index
                             # very hacky but it works
+                            # asked Claude for advice because I have never encountered that before
 
                             closest_date = self.data.index.get_indexer(
                                 [date], method='nearest')
+
+                            # plot a golden arrow up, to indicate a golden cross
                             ax.plot(self.data.index[closest_date][0], self.data.loc[self.data.index[closest_date][0], 'Close'],
                                     marker='^', color='gold', markersize=15, zorder=5)
 
@@ -416,6 +460,7 @@ class GUI:
 
                 ax.plot(self.upper_band.index, self.upper_band,
                         label='Upper Bollinger Band', color='limegreen', linestyle='--')
+
                 ax.plot(self.lower_band.index, self.lower_band,
                         label='Lower Bollinger Band', color='red', linestyle='--')
 
@@ -447,10 +492,13 @@ class GUI:
 
                 ax2.plot(self.macd_line.index, self.macd_line,
                          label='MACD Line', color='#00ff00')
+
                 ax2.plot(self.signal_line.index, self.signal_line,
                          label='Signal Line', color='#ff0000')
+
                 ax2.bar(self.macd_histogram.index, self.macd_histogram,
                         label='MACD Histogram', color="#d400ff", alpha=0.5)
+
                 ax2.axhline(0, color='grey', linestyle='--')
                 ax2.set_ylabel('MACD')
 
@@ -458,21 +506,24 @@ class GUI:
 
                 ax2.plot(self.rsi_data.index, self.rsi_data,
                          label='14 Day RSI', color='#ffa500')
+
                 ax2.axhline(70, color='red', linestyle='--')
                 ax2.axhline(30, color='limegreen', linestyle='--')
+
+                # it fills in everything above 70 in red -> overbought
                 ax2.fill_between(self.rsi_data.index, self.rsi_data, 70, where=(
                     self.rsi_data >= 70), color='red', alpha=0.3)
+                # it fills in everythint below 30 in green -> oversold
                 ax2.fill_between(self.rsi_data.index, self.rsi_data, 30, where=(
                     self.rsi_data <= 30), color='limegreen', alpha=0.3)
+
                 ax2.set_ylabel('RSI')
 
-            # add a title and legend
             ax.set_title(
                 f'{self.stock} Stock Price between {self.data.index[0].date()} and {self.data.index[-1].date()}')
             ax.legend()
             ax2.legend()
 
-        # Give the user feedback whether to buy,sell or hold a product
             if self.verdict == "Buy":
                 st.success(
                     f'Verdict: {self.verdict}. According to the indicators, it might be a good time to buy {self.stock}. Look at the sidebar for an explanation!')
@@ -491,7 +542,6 @@ class GUI:
 
             if self.atr_data is not None:
 
-                # give user a feedback over the estimated risk of buying a stock, shown with a scaled ATR
                 if self.atr_data > 70:
 
                     st.error(
@@ -514,21 +564,24 @@ class GUI:
             st.pyplot(fig_long_term)
 
     def tab_short_term(self):
-        '''Creates a tab with the most recent data plotted'''
+        '''
+        Takes data for short term data (<7d) and display it to the user, also give him a current price of the stock 
+        This all happens in the second tab within tab 1(Sounds weird, I know), so it's seperated from the rest. If it cannot be plotted for whatever reason, there is also error handling here. We
+        also use the data saved in the class for this occasion, for convenience
+        '''
+        # error handling, check if everything is alright and say no if it's not alright
         try:
             today_data = self.data_short_term['Close'].iloc[-1]
             today_data = round(today_data, 2)
 
-            # basically same thing than the long term tab but short
             with self.tab_short:
+
                 st.write(f"{self.stock} : {today_data}$")
                 fig_short_term, (ax) = plt.subplots(figsize=(16, 8))
 
-                # name the axes and add a grid
                 ax.set_xlabel('Date')
                 ax.set_ylabel('Price (USD)')
                 ax.grid()
-                # ax.set_title(f'{stock} Stock Price between {data.index[0].date()} and {data.index[-1].date()}')
 
                 ax.plot(
                     self.data_short_term.index, self.data_short_term['Close'], label=f'Movement of {self.stock} in a short frame', color="#EA00FF")
@@ -538,7 +591,11 @@ class GUI:
             st.error(f"Oops, something went wrong, try again: {e}")
 
     def tab_heatmap(self):
-        '''Create a heatmap and display it as streamlit dataframe'''
+        '''
+        Take all the data we have collected so far and create a heatmap of indicators and verdict within the past 6 months and display them as streamlit dataframe. 
+        We also give the user the opportunity to create a historical heatmap of one of the quarters we have saved in data_daved as parquet file.
+        If creation was successful we also offer the opportunity to download the heatmap as csv data, in case he wants it
+        '''
 
         self.tab_quarters = []
 
@@ -556,12 +613,14 @@ class GUI:
 
         # ... or choose from a historical option
         with col2:
-            # get pre calculated files from the folder and sort them
+            # get pre calculated files from the folder and sort them,
             for file in Path("stock_crypto/data_saved/heatmap_parquet").glob("*.parquet"):
 
                 self.tab_quarters.append(f'{file.stem}')
 
             self.tab_quarters.sort()
+
+            # sorted Heatmaps can be chosen, they are in chronological order, so it fits in a select slicer
             self.quarter_choice = st.select_slider(
                 label="Select a quarter to display the heatmap from", options=self.tab_quarters)
 
@@ -579,17 +638,24 @@ class GUI:
                          .map(ema_color, subset=['EMA Diff'])
                          .map(macd_color, subset=['MACD Diff'])
                          .map(atr_color, subset=['Risk']))
+
             heatmap_csv = st.session_state.heatmap_data.to_csv(
                 index=False).encode('utf-8')
             st.download_button(label="Export Heatmap as CSV",
                                data=heatmap_csv, file_name="Heatmap.csv", mime="text/csv")
+
             st.info(
                 "Note: Historical data uses SMA20 and SMA50 for calculations instead of SMA30 and SMA100 to better fit the shorter timeframes")
 
     def tab_prediction(self):
-        '''Create a portfolio calculator for input given by the user'''
+        '''
+        Use the predicition system from predition and display it as plot. Also give the user
+        the opportunity to adjust timeframes to look at it from different perspectives. This all 
+        happens in the dedicated prediction tab and works basically the same as the other plot tabs in tab 1
+        '''
 
         with self.tab3:
+            # error handling, in case the graph cannot be plotted
             try:
                 fig_prediction, ax = plt.subplots(figsize=(16, 8))
 
@@ -597,6 +663,7 @@ class GUI:
                 ax.set_ylabel('Price (USD)')
                 ax.grid()
 
+                # plot first the historical data from previous days as red and then put the prediction beneath it, hacky but works best that way
                 ax.plot(
                     self.data_prediction_now.index, self.data_prediction_now['Close'], label="Stock price in the past", color='red', zorder=5)
                 ax.plot(self.data_pred_future.index, self.data_pred_future['Close'],
@@ -604,7 +671,6 @@ class GUI:
 
                 ax.legend()
 
-                # take the most recent price in the prediction to indicate a potential price in the next n days
                 target_price = self.data_pred_future['Close'].iloc[-1]
                 target_price = round(target_price, 2)
 
@@ -616,12 +682,20 @@ class GUI:
                 st.error("Something went wrong, did you check for correct input?")
 
     def tab_portfolio_calculator(self):
-        """Plotting of the portfolio calculator based with the input by a user"""
+        """
+        Get the dataframe created earlier and display it as portfolio table basically
+        Also use the data collected for the portfolio and create a heatmap similarly to the other heatmap to give the user further insight into how the state
+        of his portfolio is looking like.
+        Again, we offer download buttons as csv file if desired
+        """
+
         # visualize the dataframe and heatmap of the portfolio
+        # use some of the colours initialized in colour coding for the change
         st.dataframe(st.session_state.portfolio_df.style.map(
             color_code, subset=['Change%']))
         portfolio_csv = st.session_state.portfolio_df.to_csv(
             index=False).encode('utf-8')
+
         st.download_button(label="Download your portfolio as csv",
                            data=portfolio_csv, file_name="Portfolio.csv", mime="text/csv")
 
@@ -645,19 +719,26 @@ class GUI:
         st.info("Note that you can only add one stock of each kind")
 
     def tab_network_graph(self):
-        '''Plot the networking graph'''
+        '''
+        Plot the networking graph, unlike the other plots we do not use motplotlib but plotly instead, to make it interactable and cooler looking
+        Here we also offer the option for historical and recent options.
+
+        For that we take the parquet files to read them and display them in the second tab. We basically just use the correlations and plot them, 
+        further infomration can be found in notebooks and code from other functions 
+        '''
         network_quarter_options = []
         fig_network = None
 
-        # display the network input and output in tab 5
         with self.tab5:
+
             tab_current_adjustable, tab_historical_data = st.tabs(
                 ["Show the current network", "Show historical networks"])
+
             st.write(
                 "Creates a Network Graph showing correlations between market movements of S&P 500 companies in the past 6 months")
 
-            # 2 tabs within a tab to distplay a current network and historical records of networks
             with tab_current_adjustable:
+                # user input for the threshold, for better analysis and interactivity
                 threshold = st.slider("Threshold for the correlations", min_value=0.3, max_value=1.0, value=0.7,
                                       help="Bigger correlations usually mean companies are very connected. NOTE: Be aware that a low threshold might slow your PC!")
 
@@ -665,18 +746,17 @@ class GUI:
                 if st.button("Create a new networking Graph"):
 
                     with st.spinner("This will take a while...Please wait"):
-                        if st.session_state.df_correlation is None:
-                            st.session_state.df_correlation = correlations(
-                                None, None)
 
-                        else:
-                            pass
+                        # create the correlations for the network, explanation is in correlations
+                        st.session_state.df_correlation = correlations(
+                            None, None)
 
+                        # plot the network with the calculated correlations and given threshold
                         fig_network = plot_network(
                             st.session_state.df_correlation, threshold)
 
             with tab_historical_data:
-                # create an option for every entry in the folder and create a select slider, then read json file
+                # create an option for every entry in the folder and create a select slider, then read parquet and sort
                 for file in Path("stock_crypto/data_saved/correlation_parquet").glob("*.parquet"):
 
                     network_quarter_options.append(f'{file.stem}')
@@ -696,3 +776,7 @@ class GUI:
 
             if fig_network is not None:
                 st.plotly_chart(fig_network)
+
+# ===============================================================================================================
+#                   Future additions and tabs can be added here
+# ===============================================================================================================
