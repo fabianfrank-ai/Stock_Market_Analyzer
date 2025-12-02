@@ -1,4 +1,3 @@
-# just a bit of skiddadling right now, nothing too serious yet
 
 import pandas as pd
 import networkx as nx
@@ -6,14 +5,17 @@ import plotly.graph_objects as go
 import numpy as np
 import urllib.request
 
-# suggestion by ChatGPT in a brainstorming session
+# suggestion by ChatGPT in a brainstorming session, explained it in the corresponding notebook
 from networkx.algorithms import community as nx_comm
 from scipy.spatial import ConvexHull
 import plotly.io as pio
 
 
 def get_company_info():
-    '''Fetches company names and sectors for S&P 500 companies from Wikipedia'''
+    '''
+    Fetches company names and sectors for S&P 500 companies from Wikipedia
+    We need that for the hover text to get further insight and judge the eg clusters better
+    '''
 
     # fetch the wikipedia page
     url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
@@ -40,7 +42,11 @@ def get_company_info():
 
 
 def create_network(df_correlation, threshold):
-    '''Creates a network graph out of a correlation matrix'''
+    '''
+    Creates a network graph out of a correlation matrix
+    Returns a Graph G that can be used to create further stuff
+    If there are questions about plotly have a look at notebooks/network_guide.ipynb
+    '''
 
     G = nx.Graph()
 
@@ -61,7 +67,11 @@ def create_network(df_correlation, threshold):
 
 # threshold is chosen for best performance and visibility
 def plot_network(df_correlation, threshold):
-    '''Plots the graph with plotly'''
+    '''
+    Plots the graph with plotly
+
+    If there are questions about plotly have a look at notebooks/network_guide.ipynb
+    '''
 
     G = create_network(df_correlation, threshold)
 

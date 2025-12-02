@@ -5,7 +5,11 @@ class rsi_verdict:
         self.buyer_score = self.calculate_verdict()
 
     def calculate_verdict(self):
-        '''Calculate the buyer score based on RSI value.'''
+        '''
+        Calculate the buyer score based on RSI value. 
+        Traders differentiate between overbought rsi>70 and oversold rsi<30, so therse signals
+        give of stronger signals 
+        '''
         if self.rsi_value > 70:
             return -3
         elif 50 < self.rsi_value <= 70:

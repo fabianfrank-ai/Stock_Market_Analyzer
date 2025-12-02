@@ -11,7 +11,12 @@ class macd_verdict:
         self.buyer_score += self.crossover_verdict()
 
     def calculate_verdict(self):
-        '''Generate verdict based on MACD line and signal line'''
+        '''
+        Generate verdict based on MACD line and signal line
+
+        Here we are looking at the relative position between macd line and signal line, giving off 2 points at most, 
+        if macd line is above signal line
+        '''
         buyer_score = 0
 
         # Determine verdict based on MACD line and signal line
@@ -25,7 +30,10 @@ class macd_verdict:
         return buyer_score
 
     def movement_verdict(self):
-        '''Generate verdict based on the movement of MACD and signal lines.'''
+        '''
+        Generate verdict based on the movement of MACD and signal lines.
+        Here we kinda look at momentum, that means, if the lines move upwards, a buy signal of one is given
+        '''
         buyer_score = 0
         # Calculate the movements
         macd_movement = self.macd_line.iloc[-1] - self.macd_line.iloc[-2]
@@ -45,7 +53,10 @@ class macd_verdict:
         return buyer_score
 
     def crossover_verdict(self):
-        '''Generate verdict based on MACD crossover events.'''
+        '''
+        Generate verdict based on MACD crossover events.
+        If lines cross, we behave similarly than with ma crossings and give 5 signals
+        '''
         buyer_score = 0
         # Check for recent crossover events
         if self.macd_line.iloc[-2] < self.signal_line.iloc[-2] and self.macd_line.iloc[-1] > self.signal_line.iloc[-1]:

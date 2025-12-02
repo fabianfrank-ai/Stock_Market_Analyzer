@@ -57,6 +57,7 @@ def generate_portfolio(ticker, amount, buy_in):
         current_price_list.append(current_price)
 
         overall_profit_list.append(profit_per_stock)
+
         # create a dataframe that does'nt get deleted
         sst.portfolio_dataframe = pd.DataFrame({'Ticker': ticker_list,
                                                 'Amount': amount_list,

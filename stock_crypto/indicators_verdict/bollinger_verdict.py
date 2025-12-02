@@ -8,7 +8,14 @@ class bollinger_verdict:
         self.buyer_score = self.calculate_buyer_score()
 
     def calculate_buyer_score(self):
-        '''Calculate the buyer score based on Bollinger Bands.'''
+        '''
+        Calculate the buyer score based on Bollinger Bands.
+
+        We check for bullish/bearish conditions, as bollinger bands are treated differently there. If we are in a bullish market
+        a high bb% (relative position of price between the two bands) could mean there is high momentum and the graph will
+        break out.
+        If we are in a bearish market a high bb% is considered a signal for overbought conditions and is treated differently here
+        '''
         buyer_score = 0
         bollinger_percentage = (self.price - self.lower_band.iloc[-1]) / (
             self.upper_band.iloc[-1] - self.lower_band.iloc[-1]) * 100
