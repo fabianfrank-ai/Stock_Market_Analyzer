@@ -1,3 +1,8 @@
+"""
+Handles generation of predictive signals based on processed market data.
+Implements logic for estimating future movements, aggregating indicator
+verdicts, and producing a consolidated prediction output.
+"""
 
 from core.indicators import sma, ema, rsi, bollinger_bands, macd
 import pandas as pd

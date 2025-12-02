@@ -1,5 +1,17 @@
+"""
+Generates verdicts based on moving averages, supporting both EMA and SMA.
+Evaluates trend direction, price relative to averages, and crossover behavior.
+"""
+
+
 class ma_verdict:
-    '''Generate verdict based on Moving Average indicators.'''
+    """
+    Produces market verdicts using EMA and SMA analysis.
+
+    This class examines how price interacts with one or more moving averages,
+    evaluates their slope and trend strength, and interprets crossover events
+    between EMAs, SMAs, or mixed pairs to assess momentum and trend direction.
+    """
 
     def __init__(self, price, ma_short, ma_long):
         '''Initialize the ma_verdict class with necessary indicators.'''

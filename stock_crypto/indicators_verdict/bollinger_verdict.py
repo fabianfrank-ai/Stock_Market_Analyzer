@@ -1,4 +1,18 @@
+"""
+Generates verdicts based on Bollinger Bands. Evaluates band touches,
+volatility expansion or contraction, and price position within the bands.
+"""
+
+
 class bollinger_verdict:
+    """
+    Interprets Bollinger Band behavior to produce a market verdict.
+
+    This class analyzes price movement relative to the upper, middle, 
+    and lower bands, considers volatility changes, and evaluates signals 
+    such as squeezes, breakouts, and overextension conditions.
+    """
+
     def __init__(self, price, lower_band, upper_band, sma_long):
         '''Initialize the Bollinger Bands verdict.'''
         self.price = price

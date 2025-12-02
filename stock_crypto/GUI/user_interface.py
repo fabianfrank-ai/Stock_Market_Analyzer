@@ -1,3 +1,8 @@
+"""
+Implements the graphical user interface for the application. Handles user
+interaction, event processing, and the coordination of displayed data and
+controls.
+"""
 
 import streamlit as st
 import pandas as pd

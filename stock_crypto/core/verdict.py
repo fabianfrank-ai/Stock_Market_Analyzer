@@ -1,3 +1,8 @@
+"""
+Defines the base verdict structure used across technical analysis components.
+Provides shared logic, interfaces, and utilities for generating consistent
+verdict outputs from various indicator-specific evaluators.
+"""
 
 from indicators_verdict.ma_verdict import ma_verdict
 from indicators_verdict.rsi_verdict import rsi_verdict

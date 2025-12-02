@@ -1,3 +1,6 @@
+"""
+Entry point for the application. Initializes and launches the GUI.
+"""
 
 from GUI.user_interface import GUI
 

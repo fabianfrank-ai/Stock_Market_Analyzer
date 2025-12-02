@@ -1,4 +1,18 @@
+"""
+Generates a verdict based on MACD behavior. Evaluates line positions,
+momentum shifts, and crossover events to produce a signal.
+"""
+
+
 class macd_verdict:
+    """
+    Interprets MACD line dynamics to produce a market verdict.
+
+    This class analyzes MACD and signal line positions, their direction
+    of movement, and any crossover patterns to determine momentum strength
+    and potential trend shifts.
+    """
+
     def __init__(self, macd_line, signal_line):
         '''Initialize the MACD verdict class with necessary indicators.'''
         self.macd_line = macd_line
