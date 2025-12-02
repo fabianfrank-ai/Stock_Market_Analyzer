@@ -1,12 +1,16 @@
-#
+"""
+Handles generation of predictive signals based on processed market data.
+Implements logic for estimating future movements, aggregating indicator
+verdicts, and producing a consolidated prediction output.
+"""
+
 from core.indicators import sma, ema, rsi, bollinger_bands, macd
 import pandas as pd
 
 
 def retreive_data(data):
 
-    # idea should be in one of my handwritten notes, basically give every indicator a weight and add them all together
-    # as weight for existing data
+    # I explained the idea in the notebook in notebooks/
 
     sma_short = sma(data, 30)
     sma_long = sma(data, 100)
@@ -38,8 +42,10 @@ def retreive_data(data):
 
     if bollinger_percentage < 0.2:
         bb_score = -1
+
     elif bollinger_percentage > 0.5:
         bb_score = 1
+
     else:
         bb_score = 0
 

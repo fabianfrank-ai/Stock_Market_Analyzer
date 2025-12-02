@@ -1,11 +1,27 @@
+"""
+Generates a verdict based on Relative Strength Index (RSI) values.
+Provides utilities for interpreting RSI signals and producing a final decision.
+"""
+
+
 class rsi_verdict:
+    """
+    Evaluates RSI data and produces a trading or momentum verdict.
+    This class takes RSI inputs, interprets them according to configured
+    thresholds, and returns a decision indicating market strength or weakness.
+    """
+
     def __init__(self, rsi_value):
         '''Initialize the RSI verdict class with the RSI value.'''
         self.rsi_value = rsi_value.iloc[-1]
         self.buyer_score = self.calculate_verdict()
 
     def calculate_verdict(self):
-        '''Calculate the buyer score based on RSI value.'''
+        '''
+        Calculate the buyer score based on RSI value. 
+        Traders differentiate between overbought rsi>70 and oversold rsi<30, so therse signals
+        give of stronger signals 
+        '''
         if self.rsi_value > 70:
             return -3
         elif 50 < self.rsi_value <= 70:

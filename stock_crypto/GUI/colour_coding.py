@@ -1,6 +1,10 @@
-# this is mainly used to colour code the dataframe in streamlit
-# The different colors are used to highlight different levels of change, verdicts, and indicator values.
-# Those colors are for visual purposes but also commonly used in trading
+
+'''
+ this is mainly used to colour code the dataframe in streamlit
+ The different colors are used to highlight different levels of change, verdicts, and indicator values.
+ Those colors are for visual purposes but also commonly used in trading
+'''
+
 
 def color_code(val):
     """Color code the dataframe based on the percentage change."""

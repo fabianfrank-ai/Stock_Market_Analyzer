@@ -1,5 +1,17 @@
+"""
+Generates verdicts based on moving averages, supporting both EMA and SMA.
+Evaluates trend direction, price relative to averages, and crossover behavior.
+"""
+
+
 class ma_verdict:
-    '''Generate verdict based on Moving Average indicators.'''
+    """
+    Produces market verdicts using EMA and SMA analysis.
+
+    This class examines how price interacts with one or more moving averages,
+    evaluates their slope and trend strength, and interprets crossover events
+    between EMAs, SMAs, or mixed pairs to assess momentum and trend direction.
+    """
 
     def __init__(self, price, ma_short, ma_long):
         '''Initialize the ma_verdict class with necessary indicators.'''
@@ -19,7 +31,12 @@ class ma_verdict:
         return ((price - ma) / ma) * 100
 
     def difference_verdict(self):
-        '''Generate verdict based on the difference between short and long moving averages.'''
+        '''
+        Generate verdict based on the difference between short and long moving averages.
+
+        If the difference between a ma and the current price is high, we generally think that there is more momentum in 
+        movement and therefore a buy signal will be ommited.
+        '''
 
         buyer_score = 0
         # Calculate the percentage differences
@@ -54,7 +71,10 @@ class ma_verdict:
         return buyer_score
 
     def change_verdict(self):
-        '''Generate verdict based on the change in moving averages.'''
+        '''
+        Generate verdict based on the change in moving averages.
+        If moving averages change within the last day in either of the directions we give a small nudge signal basically
+        '''
         buyer_score = 0
         # Calculate the changes in moving averages
         short_change = self.ma_short.iloc[-1] - self.ma_short.iloc[-2]
@@ -74,7 +94,11 @@ class ma_verdict:
         return buyer_score
 
     def crossover_verdict(self):
-        '''Generate verdict based on moving average crossover.'''
+        '''
+        Generate verdict based on moving average crossover.
+        If golden/deatb cross is seen, we take that into consideration by giving a huge signal, as it 
+        is the clearest indicator for buy we have
+        '''
         buyer_score = 0
         # Check for crossover -> very strong buy/sell signal
 

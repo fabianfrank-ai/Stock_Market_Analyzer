@@ -1,4 +1,3 @@
-# this program will screen the maket to find eligible stocks to buy
 
 import pandas as pd
 import numpy as np
@@ -9,7 +8,11 @@ from core.verdict import Verdict
 
 
 def get_tickers():
-
+    '''
+    Looks at the html of Wikipedia and checks the tables there,
+    we want the tickers from that table specifically,
+    afterwards we create a dataframe via fetch_multiple_stocks_data() and return it
+    '''
     # Get the list of S&P 500 companies from Wikipedia
     url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -33,7 +36,10 @@ def get_tickers():
 
 
 def heatmap(start, end):
-    """Generate a Dataframe of S&P 500 companies based on their gain/loss percentage over the last day."""
+    """
+    Generate a Dataframe of S&P 500 companies based on their gain/loss percentage over the last day.
+    Also calculates indicators and stuff like that and adds them to the dataframe.
+    """
 
     ticker_data = []
     change_data = []
@@ -47,7 +53,7 @@ def heatmap(start, end):
 
     dfs = get_tickers()
 
-    # for every ticker in sp500(what is in the dataframe)
+    # for every ticker in sp500(whatever is in the dataframe)
     for ticker in list(dfs.keys()):
         try:
 
@@ -61,6 +67,7 @@ def heatmap(start, end):
                 latest_change = (
                     (latest_close - previous_close) / previous_close) * 100
                 latest_change = round(latest_change, 2)
+
             else:
                 # use the provided dates to fetch data
                 data = fetch_stock_data_set_dates(ticker, start=start, end=end)

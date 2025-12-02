@@ -1,5 +1,7 @@
-# I create the dataframes manually for an animation and quicker User experience
-
+"""
+Handles the creation of quarterly data files. Converts incoming data
+into parquet-formatted DataFrames and writes them to disk.
+"""
 
 from datetime import date
 import pandas as pd

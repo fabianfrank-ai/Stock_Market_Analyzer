@@ -1,15 +1,8 @@
-import streamlit as st
+"""
+Entry point for the application. Initializes and launches the GUI.
+"""
 
 from GUI.user_interface import GUI
 
-
-# get data from the user
-
+# call the GUI, the rest will be done in user_interface.py
 gui = GUI()
-
-
-try:
-    st.session_state.buy_in_price = float(st.session_state.buy_in_price)
-    st.session_state.amount_bought = float(st.session_state.amount_bought)
-except Exception as e:
-    pass
