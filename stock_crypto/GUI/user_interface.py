@@ -1,6 +1,5 @@
 # Wanted to change to a class with everything, don't like it yet, I need convincing
 
-
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -63,6 +62,8 @@ class GUI:
         # Here I ordered the tabs and stuff just in the most convenient way, for it to run automatically
         # once main.py accesses GUI()
         # Functions can be commented out if you want to fix a bug or single out a problem
+        # It creates the widgets and stuff according to their corresponding functions in their respective
+        # tabs
         # ===============================================================================================
         self.header()
         self.tab_init()
@@ -72,6 +73,8 @@ class GUI:
         self.prepare_data()
         self.calculate_data()
 
+        # basic error handling for the Portfolio to make sure the code won't break with certain values
+        # return an error message if something fishy happens here and prevent portfolio from being created
         with self.tab4:
             try:
                 self.user_portfolio()
@@ -80,9 +83,13 @@ class GUI:
             if st.session_state.portfolio_df is not None:
                 self.tab_portfolio_calculator()
 
-        with self.tab1:
+        # again, basic error handling, give user an error message if he entered bullshit into the text input
+        if self.data is not None and not self.data.empty:
             self.tab_stock_chart()
-            self.tab_short_term()
+        else:
+            with self.tab_long:
+                st.error("Did you make sure you entered correct values?")
+        self.tab_short_term()
 
         with self.tab2:
             self.tab_heatmap()
@@ -100,10 +107,12 @@ class GUI:
 # afterwards take the data and calculate the indicators, been in Main before that but now it's here
 # ======================================================================================================
 
+
     def prepare_data(self):
         '''Prepare the data from the user input'''
         # fetch the stock data using functions defined in fetch_data.py
-
+        # here we fetch 3 different data because user can use 3 different inputs, so for each case we need
+        # a different dataset/frame
         self.data = fetch_stock_data(self.stock, f'{self.period}y', '1d')
         self.data_prediction_now = fetch_stock_data(
             self.stock_prediction, f'{self.period_prediction}y', '1d')
@@ -112,19 +121,20 @@ class GUI:
 
     def calculate_data(self):
         '''Take the user input and cook something up, was in main before but it's here now'''
-        if self.data is None or self.data.empty:
-            st.error(
-                "Error fetching data. please enter existing stocks")
-
         try:
             # create the smas, ema, macd and other indicators
             # explanations can be found in the notebooks on calculations
+            # the functions are all in the indicator tab
+
+            # create data for SMA, one long and one short
             self.data_sma_30 = sma(self.data, 30)
             self.data_sma_100 = sma(self.data, 100)
 
+            # create data for ema, one long and one short
             self.ema_12 = ema(self.data, 12)
             self.ema_26 = ema(self.data, 26)
 
+            # create histograms and lines for macd
             self.macd_line, self.signal_line = macd(self.data)
             self.macd_histogram = self.macd_line - self.signal_line
 
@@ -138,6 +148,7 @@ class GUI:
                 self.data, self.data_sma_100, self.data_sma_30, self.ema_26, self.ema_12, self.rsi_data, self.signal_line, self.macd_line, self.lower_band, self.upper_band, atr(self.data))
             self.verdict = verdict.verdict
 
+            # create crossovers(coordinates), so golden and death crosses wherever ma's meet
             self.crossover_type_sma = moving_average_crossover(
                 self.data, self.data_sma_30, self.data_sma_100)
             self.crossover_data_sma = self.crossover_type_sma.index
@@ -146,11 +157,12 @@ class GUI:
                 self.data, self.ema_12, self.ema_26)
             self.crossover_data_ema = self.crossover_type_ema.index
 
-            # calculate the price change percentage over the selected period
+            # calculate the price change percentage over the selected period and atr
             self.price_change_data = price_change(self.data)
             self.atr_data = atr(self.data)
 
         except Exception as e:
+            # if something goes wrong, here is the error message for debugging, so I know what's going on
             print(f"Error,{e}")
 
         try:
@@ -274,6 +286,7 @@ class GUI:
 # Here the user can just enter his preferred values in everything he wants and get further opportunities to analyze it to his liking
 # ======================================================================================================================================
 
+
     def user_input(self):
         '''Create user interface for user to chose his own data'''
         # create sliders for user input(time range and selected stock)
@@ -323,11 +336,14 @@ class GUI:
 
         if self.stock_buy and self.buy_in_price and self.stock_amount:
             if st.button("Add"):
-                # only return data if input is valid, otherwise return an error
+                # only create dataframe if input is valid, otherwise return an error
                 try:
                     self.stock_amount = float(self.stock_amount)
                     self.buy_in_price = float(self.buy_in_price)
                     fetch_stock_data(self.stock_buy, '30d', '1d')
+
+                    st.session_state.portfolio_df = generate_portfolio(
+                        self.stock_buy, self.stock_amount, self.buy_in_price)
 
                 except Exception as e:
                     st.error("Uh oh! Please check your input!")
@@ -502,8 +518,6 @@ class GUI:
         try:
             today_data = self.data_short_term['Close'].iloc[-1]
             today_data = round(today_data, 2)
-            beginning_data = self.data['Close'].iloc[0]
-            beginning_data = round(beginning_data, 2)
 
             # basically same thing than the long term tab but short
             with self.tab_short:
@@ -584,7 +598,7 @@ class GUI:
                 ax.grid()
 
                 ax.plot(
-                    self.data.index, self.data['Close'], label="Stock price in the past", color='red', zorder=5)
+                    self.data_prediction_now.index, self.data_prediction_now['Close'], label="Stock price in the past", color='red', zorder=5)
                 ax.plot(self.data_pred_future.index, self.data_pred_future['Close'],
                         label=f"Stock price prediction for the next {self.predicted_time_frame} days", color="#24FF07", linestyle="--")
 
@@ -603,11 +617,6 @@ class GUI:
 
     def tab_portfolio_calculator(self):
         """Plotting of the portfolio calculator based with the input by a user"""
-        if self.stock_buy is not None and self.stock_amount is not None and self.buy_in_price is not None:
-            st.session_state.portfolio_df = generate_portfolio(
-                self.stock_buy, self.stock_amount, self.buy_in_price)
-            print(st.session_state.portfolio_df)
-
         # visualize the dataframe and heatmap of the portfolio
         st.dataframe(st.session_state.portfolio_df.style.map(
             color_code, subset=['Change%']))
