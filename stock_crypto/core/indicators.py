@@ -1,9 +1,27 @@
+'''
+Here you find essential indicators in the Indicators class, easy maintenance and modularity allow for adding of more tickers,
+if you desire to get further input, please do not hesitate to look at the indicators_guide notebook in notebooks, code is
+briefly explained here but for further insight it might be sensible to look at a complete explanation.
+'''
+
+
 # chatgpt was used to suggest equations for suitable indicatiors
 import pandas as pd
 
 
 class Indicators:
+    '''
+    Class that contains all indicators, insert data in order to calculate indicators. 
+    For example indicatos = Indicators(data)
+                indicators.sma(window) in order to calculate an sma for a specific window
+
+    Modular structure allows easy maintenance and more indicators can be added with ease  
+    '''
+
     def __init__(self, data):
+        '''
+        Add data to self, so all indicators can access it if necessary
+        '''
 
         self.data = data
 

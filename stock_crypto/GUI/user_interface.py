@@ -10,12 +10,12 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import plotly.io as pio
 
-from core.prediction import prediction
+from core.prediction import Prediction
 from core.market_screener import heatmap, heatmap_portfolio, correlations
 from core.portfolio import generate_portfolio
 from GUI.colour_coding import color_coding_rules as crr
-from core.network_graphing import plot_network
-from data.fetch_data import fetch_stock_data
+from core.network_graphing import network_graph
+from data.fetch_data import stock_data
 from core.indicators import Indicators
 from core.verdict import Verdict
 
@@ -124,17 +124,17 @@ class GUI:
 # afterwards take the data and calculate the indicators, been in Main before that but now it's here
 # ======================================================================================================
 
-
     def prepare_data(self):
         '''
         Prepare the data from the user input. Here we fetch data 
         '''
         # here we fetch 3 different data because user can use 3 different inputs, so for each case we need
         # a different dataset/frame
-        self.data = fetch_stock_data(self.stock, f'{self.period}y', '1d')
-        self.data_prediction_now = fetch_stock_data(
+        self.data = stock_data.fetch_stock_data(
+            self.stock, f'{self.period}y', '1d')
+        self.data_prediction_now = stock_data.fetch_stock_data(
             self.stock_prediction, f'{self.period_prediction}y', '1d')
-        self.data_short_term = fetch_stock_data(
+        self.data_short_term = stock_data.fetch_stock_data(
             self.stock_short, f'{self.timeframe_short}', '1m')
 
     def calculate_data(self):
@@ -183,9 +183,11 @@ class GUI:
 
         # also some basic error handling, in case input is weird or something
         try:
-            self.data_pred_future = prediction(
+            prediction = Prediction(
                 self.data_prediction_now, self.predicted_time_frame)
+            self.data_pred_future = prediction.data_pred
         except Exception as e:
+            print(f"{e}")
             self.data_pred_future = None
 
 # ==============================================================================================================|
@@ -309,7 +311,6 @@ class GUI:
 # Here the user can just enter his preferred values in everything he wants and get further opportunities to analyze it to his liking
 # ======================================================================================================================================
 
-
     def user_input(self):
         '''
         Create user interface for user to chose his own data, for mainly stock plots, predictions, long- and short term plots
@@ -381,7 +382,7 @@ class GUI:
                 try:
                     self.stock_amount = float(self.stock_amount)
                     self.buy_in_price = float(self.buy_in_price)
-                    fetch_stock_data(self.stock_buy, '30d', '1d')
+                    stock_data.fetch_stock_data(self.stock_buy, '30d', '1d')
 
                     # create datafrane from the input
                     st.session_state.portfolio_df = generate_portfolio(
@@ -686,7 +687,8 @@ class GUI:
 
                 st.pyplot(fig_prediction)
             except Exception as e:
-                st.error("Something went wrong, did you check for correct input?")
+                st.error(
+                    f"Something went wrong, did you check for correct input?: {e}")
 
     def tab_portfolio_calculator(self):
         """
@@ -733,6 +735,7 @@ class GUI:
         For that we take the parquet files to read them and display them in the second tab. We basically just use the correlations and plot them, 
         further infomration can be found in notebooks and code from other functions 
         '''
+
         network_quarter_options = []
         fig_network = None
 
@@ -758,9 +761,10 @@ class GUI:
                         st.session_state.df_correlation = correlations(
                             None, None)
 
+                        fig_network = network_graph(
+                            st.session_state.df_correlation, threshold).fig
+
                         # plot the network with the calculated correlations and given threshold
-                        fig_network = plot_network(
-                            st.session_state.df_correlation, threshold)
 
             with tab_historical_data:
                 # create an option for every entry in the folder and create a select slider, then read parquet and sort
@@ -778,8 +782,9 @@ class GUI:
                 if st.button("Go", key="Network go button"):
                     st.session_state.df_correlation = pd.read_parquet(
                         f'stock_crypto/data_saved/correlation_parquet/{network_quarter_choice}.parquet').copy()
-                    fig_network = plot_network(
-                        st.session_state.df_correlation, threshold)
+
+                    fig_network = network_graph(
+                        st.session_state.df_correlation, threshold).fig
 
             if fig_network is not None:
                 st.plotly_chart(fig_network)
