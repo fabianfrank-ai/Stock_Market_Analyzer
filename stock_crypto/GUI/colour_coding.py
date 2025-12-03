@@ -11,7 +11,7 @@ class color_coding_rules:
     def __init__(self):
         pass
 
-    def color_code(self, val):
+    def color_code(val):
         """Color code the dataframe based on the percentage change."""
 
         # Define color thresholds, bigger changes get darker colors, to emphasize them
@@ -46,7 +46,7 @@ class color_coding_rules:
         # return the color in this format so streamlit can use it
         return 'background-color: {}'.format(color)
 
-    def verdict_color(self, val):
+    def verdict_color(val):
         """Color code the verdict column."""
 
         # give every verdict a specific color for the heatmap
@@ -75,7 +75,7 @@ class color_coding_rules:
 
         return 'background-color: {}'.format(color)
 
-    def rsi_color(self, val):
+    def rsi_color(val):
         """Color code the RSI values."""
 
         if val > 70:
@@ -92,7 +92,7 @@ class color_coding_rules:
 
         return 'background-color: {}'.format(color)
 
-    def ema_color(self, val):
+    def ema_color(val):
         """Color code the EMA values."""
 
         if val > 0:
@@ -109,7 +109,7 @@ class color_coding_rules:
 
         return 'background-color: {}'.format(color)
 
-    def macd_color(self, val):
+    def macd_color(val):
         """Color code the MACD values."""
 
         if val > 0:
@@ -126,7 +126,7 @@ class color_coding_rules:
 
         return 'background-color: {}'.format(color)
 
-    def sma_color(self, val):
+    def sma_color(val):
         """Color code the SMA values."""
 
         if val > 0.3:
@@ -143,7 +143,7 @@ class color_coding_rules:
 
         return 'background-color: {}'.format(color)
 
-    def bollinger_color(self, val):
+    def bollinger_color(val):
         """Color code the Bollinger Band values."""
 
         if val > 0.8:
@@ -160,7 +160,7 @@ class color_coding_rules:
 
         return 'background-color: {}'.format(color)
 
-    def atr_color(self, val):
+    def atr_color(val):
         """Color code the ATR values."""
 
         if val > 70:

@@ -17,7 +17,6 @@ from GUI.colour_coding import color_coding_rules as crr
 from core.network_graphing import plot_network
 from data.fetch_data import fetch_stock_data
 from core.indicators import Indicators
-
 from core.verdict import Verdict
 
 
@@ -124,6 +123,7 @@ class GUI:
 # Take input from the user via user_input(), like timeframes, stock tickers etc and get data from yfinance,
 # afterwards take the data and calculate the indicators, been in Main before that but now it's here
 # ======================================================================================================
+
 
     def prepare_data(self):
         '''
@@ -308,6 +308,7 @@ class GUI:
 #                               USER INPUT
 # Here the user can just enter his preferred values in everything he wants and get further opportunities to analyze it to his liking
 # ======================================================================================================================================
+
 
     def user_input(self):
         '''
