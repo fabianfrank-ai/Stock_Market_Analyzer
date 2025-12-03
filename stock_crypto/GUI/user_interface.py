@@ -164,7 +164,7 @@ class GUI:
 
             verdict = Verdict(
                 self.data, self.data_sma_100, self.data_sma_30, self.ema_26, self.ema_12, self.rsi_data, self.signal_line, self.macd_line, self.lower_band, self.upper_band, self.atr_data)
-            self.verdict = verdict
+            self.verdict = verdict.verdict
 
             self.crossover_type_sma = indicators.moving_average_crossover(
                 self.data_sma_30, self.data_sma_100)
