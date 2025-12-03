@@ -1,4 +1,7 @@
-
+"""
+Creates a networking graph with clustering via plotly, so everything is interactable.
+Further explanation can be found in the notebook
+"""
 import pandas as pd
 import networkx as nx
 import plotly.graph_objects as go
@@ -189,7 +192,7 @@ def plot_network(df_correlation, threshold):
 
 
 def clustering(G, pos, fig):
-    '''Cluster the data'''
+    '''Cluster the data using greedy modularity'''
 
     # remove non-existing nodes and partition the existing ones (otherwise nx will literally scream at you in agony)
     # replaced louvain with greedy modularity because louvain failed consistently (do not ask me why, I went through enough)
