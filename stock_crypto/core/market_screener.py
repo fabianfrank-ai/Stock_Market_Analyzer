@@ -19,8 +19,13 @@ def get_tickers():
     html = urllib.request.urlopen(req).read()
     tables = pd.read_html(html)
 
-    # filter all the tickers from the table on wikipedia
-    sp500_tickers = tables[0]['Symbol'].tolist()
+    # more robust way because Wikipedia loves changing their site, checks all tables
+    for table in tables:
+        try:
+            sp500_tickers = table["Symbol"].tolist()
+        except Exception:
+            pass
+
     # wikipedia uses dots in some ticker symbols, but yfinance needs dashes (e.g. BF.B -> BF-B)
     sp500_tickers = [t.replace(".", "-") for t in sp500_tickers]
 

@@ -26,10 +26,15 @@ def get_company_info():
     html = urllib.request.urlopen(req).read()
     tables = pd.read_html(html)
 
-    # extract company names, sectors and tickers
-    company_names = tables[1]['Security'].tolist()
-    company_sector = tables[1]['GICS Sector'].tolist()
-    sp500_tickers = tables[1]['Symbol'].tolist()
+    # extract company names, sectors and tickers, also more robust by checking all tables
+    for table in tables:
+        try:
+            company_names = table['Security'].tolist()
+            company_sector = table['GICS Sector'].tolist()
+            sp500_tickers = table['Symbol'].tolist()
+        except Exception:
+            pass
+
     # wikipedia uses dots in some ticker symbols, but yfinance needs dashes (e.g. BF.B -> BF-B)
     sp500_tickers = [t.replace(".", "-") for t in sp500_tickers]
 
