@@ -13,11 +13,10 @@ import plotly.io as pio
 from core.prediction import prediction
 from core.market_screener import heatmap, heatmap_portfolio, correlations
 from core.portfolio import generate_portfolio
-from GUI.colour_coding import color_code, verdict_color, rsi_color, ema_color, macd_color, sma_color, bollinger_color, atr_color
+from GUI.colour_coding import color_coding_rules as crr
 from core.network_graphing import plot_network
 from data.fetch_data import fetch_stock_data
-from core.indicators import sma,  bollinger_bands, rsi, price_change, ema, macd, moving_average_crossover, atr
-
+from core.indicators import Indicators
 from core.verdict import Verdict
 
 
@@ -125,6 +124,7 @@ class GUI:
 # afterwards take the data and calculate the indicators, been in Main before that but now it's here
 # ======================================================================================================
 
+
     def prepare_data(self):
         '''
         Prepare the data from the user input. Here we fetch data 
@@ -147,34 +147,35 @@ class GUI:
         here we just use the functionality and the result, I don't think I need to explain them further 
         '''
         try:
+            indicators = Indicators(self.data)
 
-            self.data_sma_30 = sma(self.data, 30)
-            self.data_sma_100 = sma(self.data, 100)
+            self.data_sma_30 = indicators.sma(30)
+            self.data_sma_100 = indicators.sma(100)
 
-            self.ema_12 = ema(self.data, 12)
-            self.ema_26 = ema(self.data, 26)
+            self.ema_12 = indicators.ema(12)
+            self.ema_26 = indicators.ema(26)
 
-            self.macd_line, self.signal_line = macd(self.data)
+            self.macd_line, self.signal_line = indicators.macd()
             self.macd_histogram = self.macd_line - self.signal_line
 
-            self.lower_band, self.upper_band = bollinger_bands(
-                self.data, 30)
-            self.rsi_data = rsi(self.data, 14)
+            self.lower_band, self.upper_band = indicators.bollinger_bands()
+            self.rsi_data = indicators.rsi()
+            self.atr_data = indicators.atr()
 
             verdict = Verdict(
-                self.data, self.data_sma_100, self.data_sma_30, self.ema_26, self.ema_12, self.rsi_data, self.signal_line, self.macd_line, self.lower_band, self.upper_band, atr(self.data))
-            self.verdict = verdict.verdict
+                self.data, self.data_sma_100, self.data_sma_30, self.ema_26, self.ema_12, self.rsi_data, self.signal_line, self.macd_line, self.lower_band, self.upper_band, self.atr_data)
+            self.verdict = verdict
 
-            self.crossover_type_sma = moving_average_crossover(
-                self.data, self.data_sma_30, self.data_sma_100)
+            self.crossover_type_sma = indicators.moving_average_crossover(
+                self.data_sma_30, self.data_sma_100)
+
             self.crossover_data_sma = self.crossover_type_sma.index
 
-            self.crossover_type_ema = moving_average_crossover(
-                self.data, self.ema_12, self.ema_26)
+            self.crossover_type_ema = indicators.moving_average_crossover(
+                self.ema_12, self.ema_26)
             self.crossover_data_ema = self.crossover_type_ema.index
 
-            self.price_change_data = price_change(self.data)
-            self.atr_data = atr(self.data)
+            self.price_change_data = indicators.price_change()
 
         except Exception as e:
             # if something goes wrong, here is the error message for debugging, so I know what's going on
@@ -308,6 +309,7 @@ class GUI:
 # Here the user can just enter his preferred values in everything he wants and get further opportunities to analyze it to his liking
 # ======================================================================================================================================
 
+
     def user_input(self):
         '''
         Create user interface for user to chose his own data, for mainly stock plots, predictions, long- and short term plots
@@ -419,14 +421,14 @@ class GUI:
                 # dark green background for positive price change
                 ax.set_facecolor('#003f3f')
                 ax.plot(
-                    self.data.index, self.data['Close'], label=f'Close Price \u25B2 {price_change}%', color='white')
+                    self.data.index, self.data['Close'], label=f'Close Price \u25B2 {self.price_change_data}%', color='white')
 
             else:
 
                 # dark red background for negative price change
                 ax.set_facecolor('#3f0000')
                 ax.plot(
-                    self.data.index, self.data['Close'], label=f'Close Price \u25BC {price_change}%', color='#ff4d4d')
+                    self.data.index, self.data['Close'], label=f'Close Price \u25BC {self.price_change_data}%', color='#ff4d4d')
 
             if 'SMA' in self.selected_indicators:
 
@@ -635,14 +637,14 @@ class GUI:
 
         if st.session_state.heatmap_data is not None:
             st.dataframe(st.session_state.heatmap_data.style
-                         .map(color_code, subset=['Change'])
-                         .map(verdict_color, subset=['Verdict'])
-                         .map(sma_color, subset=['SMA Diff'])
-                         .map(rsi_color, subset=['RSI'])
-                         .map(bollinger_color, subset=['Bollinger %'])
-                         .map(ema_color, subset=['EMA Diff'])
-                         .map(macd_color, subset=['MACD Diff'])
-                         .map(atr_color, subset=['Risk']))
+                         .map(crr.color_code, subset=['Change'])
+                         .map(crr.verdict_color, subset=['Verdict'])
+                         .map(crr.sma_color, subset=['SMA Diff'])
+                         .map(crr.rsi_color, subset=['RSI'])
+                         .map(crr.bollinger_color, subset=['Bollinger %'])
+                         .map(crr.ema_color, subset=['EMA Diff'])
+                         .map(crr.macd_color, subset=['MACD Diff'])
+                         .map(crr.atr_color, subset=['Risk']))
 
             heatmap_csv = st.session_state.heatmap_data.to_csv(
                 index=False).encode('utf-8')
@@ -697,7 +699,7 @@ class GUI:
         # visualize the dataframe and heatmap of the portfolio
         # use some of the colours initialized in colour coding for the change
         st.dataframe(st.session_state.portfolio_df.style.map(
-            color_code, subset=['Change%']))
+            crr.color_code, subset=['Change%']))
         portfolio_csv = st.session_state.portfolio_df.to_csv(
             index=False).encode('utf-8')
 
@@ -709,14 +711,14 @@ class GUI:
             index=False).encode('utf-8')
 
         st.dataframe(heatmap_portf.style
-                     .map(color_code, subset=['Change'])
-                     .map(verdict_color, subset=['Verdict'])
-                     .map(sma_color, subset=['SMA Diff'])
-                     .map(rsi_color, subset=['RSI'])
-                     .map(bollinger_color, subset=['Bollinger %'])
-                     .map(ema_color, subset=['EMA Diff'])
-                     .map(macd_color, subset=['MACD Diff'])
-                     .map(atr_color, subset=['Risk']))
+                     .map(crr.color_code, subset=['Change'])
+                     .map(crr.verdict_color, subset=['Verdict'])
+                     .map(crr.sma_color, subset=['SMA Diff'])
+                     .map(crr.rsi_color, subset=['RSI'])
+                     .map(crr.bollinger_color, subset=['Bollinger %'])
+                     .map(crr.ema_color, subset=['EMA Diff'])
+                     .map(crr.macd_color, subset=['MACD Diff'])
+                     .map(crr.atr_color, subset=['Risk']))
 
         st.download_button(label="Download your heatmap as csv", data=heatmap_portf_csv,
                            file_name='Portfolio heatmap.csv', mime="text/csv")

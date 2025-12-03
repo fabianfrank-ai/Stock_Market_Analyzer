@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import urllib.request
 from data.fetch_data import fetch_stock_data, fetch_stock_data_set_dates, fetch_multiple_stocks_data
-from core.indicators import sma, bollinger_bands, rsi, ema, macd, atr
+from core.indicators import Indicators
 from core.verdict import Verdict
 
 
@@ -60,8 +60,10 @@ def heatmap(start, end):
             # fetch data, depending on whether start and end dates are provided (for database or not)
             if start is None and end is None:
                 data = dfs[ticker]
+                indicators = Indicators(data)
+
                 sma_percentage = (
-                    sma(data, 30).iloc[-1] - sma(data, 100).iloc[-1]) / sma(data, 100).iloc[-1] * 100
+                    indicators.sma(30).iloc[-1] - indicators.sma(100).iloc[-1]) / indicators.sma(100).iloc[-1] * 100
                 latest_close = data['Close'].iloc[-1]
                 previous_close = data['Close'].iloc[-2]
                 latest_change = (
@@ -71,9 +73,10 @@ def heatmap(start, end):
             else:
                 # use the provided dates to fetch data
                 data = fetch_stock_data_set_dates(ticker, start=start, end=end)
+                indicators = Indicators(data)
                 # calculate sma percentages based on shorter timeframes, due to the length of a quartal
                 sma_percentage = (
-                    sma(data, 20).iloc[-1] - sma(data, 50).iloc[-1]) / sma(data, 50).iloc[-1] * 100
+                    indicators.sma(20).iloc[-1] - indicators.sma(50).iloc[-1]) / indicators.sma(50).iloc[-1] * 100
                 # calculate the change from the first to the last available data point, for more meaningful results
                 latest_close = data['Close'].iloc[-1]
                 previous_close = data['Close'].iloc[0]
@@ -91,21 +94,21 @@ def heatmap(start, end):
             change_data.append(latest_change)
 
             ema_percentage = (
-                ema(data, 12).iloc[-1] - ema(data, 26).iloc[-1]) / ema(data, 26).iloc[-1] * 100
+                indicators.ema(12).iloc[-1] - indicators.ema(26).iloc[-1]) / indicators.ema(26).iloc[-1] * 100
             ema_percentage = round(ema_percentage, 2)
             sma_percentage = round(sma_percentage, 2)
 
-            macd_line, signal_line = macd(data)
+            macd_line, signal_line = indicators.macd()
             macd_difference = macd_line.iloc[-1] - signal_line.iloc[-1]
             macd_difference = round(macd_difference, 2)
 
             # calculate indicators for the ticker and append the relevant data to the respective lists
             sma_data.append(sma_percentage)
-            lower_band, upper_band = bollinger_bands(data, 30)
+            lower_band, upper_band = indicators.bollinger_bands()
             bollinger_percentage = (
                 data['Close'].iloc[-1] - lower_band.iloc[-1]) / (upper_band.iloc[-1] - lower_band.iloc[-1])
             bollinger_percentage = round(bollinger_percentage, 2)
-            rsi_value = rsi(data, 14).iloc[-1]
+            rsi_value = indicators.rsi().iloc[-1]
             rsi_value = round(rsi_value, 2)
 
             bollinger_data.append(bollinger_percentage)
@@ -114,11 +117,11 @@ def heatmap(start, end):
             macd_data.append(macd_difference)
 
             # generate and append the verdict for the ticker
-            verdict_signal = Verdict(data, sma(data, 100), sma(
-                data, 30), ema(data, 26), ema(data, 12), rsi(data, 14), signal_line, macd_line, lower_band, upper_band, atr(data))
+            verdict_signal = Verdict(data, indicators.sma(100), indicators.sma(30),
+                                     indicators.ema(26), indicators.ema(12), indicators.rsi(), signal_line, macd_line, lower_band, upper_band, indicators.atr())
             verdict.append(verdict_signal.verdict)
 
-            atr_value = atr(data)
+            atr_value = indicators.atr()
             atr_value = round(atr_value, 2)
             atr_data.append(atr_value)
 
@@ -168,7 +171,8 @@ def heatmap_portfolio(portfolio):
 
             # fetch data
             data = fetch_stock_data(ticker, "6mo", '1d')
-            print(len(data))
+            indicators = Indicators(data)
+
             # check if data is valid
             if data is None or len(data) < 2:
                 print(f"Not enough data for {ticker}")
@@ -185,30 +189,30 @@ def heatmap_portfolio(portfolio):
             change_data.append(latest_change)
 
             ema_percentage = (
-                ema(data, 12).iloc[-1] - ema(data, 26).iloc[-1]) / ema(data, 26).iloc[-1] * 100
+                indicators.ema(12).iloc[-1] - indicators.ema(26).iloc[-1]) / indicators.ema(26).iloc[-1] * 100
             sma_percentage = (
-                sma(data, 30).iloc[-1] - sma(data, 100).iloc[-1]) / sma(data, 100).iloc[-1] * 100
+                indicators.sma(30).iloc[-1] - indicators.sma(100).iloc[-1]) / indicators.sma(100).iloc[-1] * 100
 
-            macd_line, signal_line = macd(data)
+            macd_line, signal_line = indicators.macd()
             macd_difference = macd_line.iloc[-1] - signal_line.iloc[-1]
 
             # calculate indicators for the ticker and append the relevant data to the respective lists
             sma_data.append(sma_percentage)
-            lower_band, upper_band = bollinger_bands(data, 30)
+            lower_band, upper_band = indicators.bollinger_bands()
             bollinger_percentage = (
                 data['Close'].iloc[-1] - lower_band.iloc[-1]) / (upper_band.iloc[-1] - lower_band.iloc[-1])
 
             bollinger_data.append(bollinger_percentage)
-            rsi_data.append(rsi(data, 14).iloc[-1])
+            rsi_data.append(indicators.rsi().iloc[-1])
             ema_data.append(ema_percentage)
-            macd_line, signal_line = macd(data)
+            macd_line, signal_line = indicators.macd()
             macd_data.append(macd_difference)
 
             # generate and append the verdict for the ticker
-            verdict.append(Verdict(data, sma(data, 100), sma(
-                data, 30), ema(data, 26), ema(data, 12), rsi(data, 14), signal_line, macd_line, lower_band, upper_band, atr(data)).verdict)
+            verdict.append(Verdict(data, indicators.sma(100), indicators.sma(30),
+                                   indicators.ema(26), indicators.ema(12), indicators.rsi(14), signal_line, macd_line, lower_band, upper_band, indicators.atr()).verdict)
 
-            atr_data.append(atr(data))
+            atr_data.append(indicators.atr())
 
             # create a dataframe from the lists
             df = pd.DataFrame({

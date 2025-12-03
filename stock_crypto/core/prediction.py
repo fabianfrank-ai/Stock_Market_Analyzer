@@ -4,21 +4,21 @@ Implements logic for estimating future movements, aggregating indicator
 verdicts, and producing a consolidated prediction output.
 """
 
-from core.indicators import sma, ema, rsi, bollinger_bands, macd
+from core.indicators import Indicators
 import pandas as pd
 
 
 def retreive_data(data):
-
+    indicators = Indicators(data)
     # I explained the idea in the notebook in notebooks/
 
-    sma_short = sma(data, 30)
-    sma_long = sma(data, 100)
-    ema_short = ema(data, 12)
-    ema_long = ema(data, 26)
-    rsi_14 = rsi(data, 14)
-    lower_band, upper_band = bollinger_bands(data, 30)
-    macd_line, signal_line = macd(data)
+    sma_short = indicators.sma(30)
+    sma_long = indicators.sma(100)
+    ema_short = indicators.ema(12)
+    ema_long = indicators.ema(26)
+    rsi_14 = indicators.rsi(14)
+    lower_band, upper_band = indicators.bollinger_bands(30)
+    macd_line, signal_line = indicators.macd()
 
     sma_short, sma_long = sma_short.align(sma_long, join='inner')
     sma_diff = (sma_short - sma_long) / sma_long
