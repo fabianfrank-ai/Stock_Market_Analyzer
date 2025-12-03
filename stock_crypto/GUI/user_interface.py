@@ -13,7 +13,7 @@ import plotly.io as pio
 from core.prediction import prediction
 from core.market_screener import heatmap, heatmap_portfolio, correlations
 from core.portfolio import generate_portfolio
-from GUI.colour_coding import color_code, verdict_color, rsi_color, ema_color, macd_color, sma_color, bollinger_color, atr_color
+from GUI.colour_coding import color_coding_rules as crr
 from core.network_graphing import plot_network
 from data.fetch_data import fetch_stock_data
 from core.indicators import Indicators
@@ -124,7 +124,6 @@ class GUI:
 # Take input from the user via user_input(), like timeframes, stock tickers etc and get data from yfinance,
 # afterwards take the data and calculate the indicators, been in Main before that but now it's here
 # ======================================================================================================
-
 
     def prepare_data(self):
         '''
@@ -309,7 +308,6 @@ class GUI:
 #                               USER INPUT
 # Here the user can just enter his preferred values in everything he wants and get further opportunities to analyze it to his liking
 # ======================================================================================================================================
-
 
     def user_input(self):
         '''
@@ -638,14 +636,14 @@ class GUI:
 
         if st.session_state.heatmap_data is not None:
             st.dataframe(st.session_state.heatmap_data.style
-                         .map(color_code, subset=['Change'])
-                         .map(verdict_color, subset=['Verdict'])
-                         .map(sma_color, subset=['SMA Diff'])
-                         .map(rsi_color, subset=['RSI'])
-                         .map(bollinger_color, subset=['Bollinger %'])
-                         .map(ema_color, subset=['EMA Diff'])
-                         .map(macd_color, subset=['MACD Diff'])
-                         .map(atr_color, subset=['Risk']))
+                         .map(crr.color_code, subset=['Change'])
+                         .map(crr.verdict_color, subset=['Verdict'])
+                         .map(crr.sma_color, subset=['SMA Diff'])
+                         .map(crr.rsi_color, subset=['RSI'])
+                         .map(crr.bollinger_color, subset=['Bollinger %'])
+                         .map(crr.ema_color, subset=['EMA Diff'])
+                         .map(crr.macd_color, subset=['MACD Diff'])
+                         .map(crr.atr_color, subset=['Risk']))
 
             heatmap_csv = st.session_state.heatmap_data.to_csv(
                 index=False).encode('utf-8')
@@ -700,7 +698,7 @@ class GUI:
         # visualize the dataframe and heatmap of the portfolio
         # use some of the colours initialized in colour coding for the change
         st.dataframe(st.session_state.portfolio_df.style.map(
-            color_code, subset=['Change%']))
+            crr.color_code, subset=['Change%']))
         portfolio_csv = st.session_state.portfolio_df.to_csv(
             index=False).encode('utf-8')
 
@@ -712,14 +710,14 @@ class GUI:
             index=False).encode('utf-8')
 
         st.dataframe(heatmap_portf.style
-                     .map(color_code, subset=['Change'])
-                     .map(verdict_color, subset=['Verdict'])
-                     .map(sma_color, subset=['SMA Diff'])
-                     .map(rsi_color, subset=['RSI'])
-                     .map(bollinger_color, subset=['Bollinger %'])
-                     .map(ema_color, subset=['EMA Diff'])
-                     .map(macd_color, subset=['MACD Diff'])
-                     .map(atr_color, subset=['Risk']))
+                     .map(crr.color_code, subset=['Change'])
+                     .map(crr.verdict_color, subset=['Verdict'])
+                     .map(crr.sma_color, subset=['SMA Diff'])
+                     .map(crr.rsi_color, subset=['RSI'])
+                     .map(crr.bollinger_color, subset=['Bollinger %'])
+                     .map(crr.ema_color, subset=['EMA Diff'])
+                     .map(crr.macd_color, subset=['MACD Diff'])
+                     .map(crr.atr_color, subset=['Risk']))
 
         st.download_button(label="Download your heatmap as csv", data=heatmap_portf_csv,
                            file_name='Portfolio heatmap.csv', mime="text/csv")
