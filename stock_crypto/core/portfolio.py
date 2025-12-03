@@ -1,5 +1,5 @@
 import streamlit as st  # need streamlit for session_state
-from data.fetch_data import fetch_stock_data
+from data.fetch_data import stock_data
 import pandas as pd
 
 sst = st.session_state
@@ -28,7 +28,7 @@ def generate_portfolio(ticker, amount, buy_in):
     if ticker not in ticker_list:
 
         # get the most recent price as list (for the index) and as float (as output)
-        current_price_index = fetch_stock_data(ticker, '1d', '1d')
+        current_price_index = stock_data.fetch_stock_data(ticker, '1d', '1d')
 
         # calculate indicators and round if necessary
         # then insert into a list for the datafframe

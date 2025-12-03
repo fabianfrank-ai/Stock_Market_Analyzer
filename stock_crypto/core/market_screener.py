@@ -1,8 +1,13 @@
+''''
+The market screener takes tickers, either from input or wikipedia html and uses indicators, pandas 
+and more in order to create dataframes for for example Heatmaps or correlation dataframes for 
+network Graphing
 
+'''
 import pandas as pd
 import numpy as np
 import urllib.request
-from data.fetch_data import fetch_stock_data, fetch_stock_data_set_dates, fetch_multiple_stocks_data
+from data.fetch_data import stock_data
 from core.indicators import Indicators
 from core.verdict import Verdict
 
@@ -30,7 +35,7 @@ def get_tickers():
     sp500_tickers = [t.replace(".", "-") for t in sp500_tickers]
 
     # fetch data for all tickers at once to improve performance
-    ticker_dataframe = fetch_multiple_stocks_data(
+    ticker_dataframe = stock_data.fetch_multiple_stocks_data(
         sp500_tickers, period="6mo", interval='1d')
     dfs = {
         # create a dictionary of dataframes for each ticker
@@ -76,7 +81,8 @@ def heatmap(start, end):
 
             else:
                 # use the provided dates to fetch data
-                data = fetch_stock_data_set_dates(ticker, start=start, end=end)
+                data = stock_data.fetch_stock_data_set_dates(
+                    ticker, start=start, end=end)
                 indicators = Indicators(data)
                 # calculate sma percentages based on shorter timeframes, due to the length of a quartal
                 sma_percentage = (
@@ -174,7 +180,7 @@ def heatmap_portfolio(portfolio):
         try:
 
             # fetch data
-            data = fetch_stock_data(ticker, "6mo", '1d')
+            data = stock_data.fetch_stock_data(ticker, "6mo", '1d')
             indicators = Indicators(data)
 
             # check if data is valid
@@ -242,7 +248,11 @@ def heatmap_portfolio(portfolio):
 
 
 def correlations(start, end):
-    '''Calculates the correlations of the S&P 500 stock movements within the past 6 months'''
+    '''
+    Calculates the correlations of the S&P 500 stock movements within the past 6 months or with fixed date,
+    so we can access correlations for the networking graph from networking_graphing.py, output is a dataframe consisting of the correlations
+    in a timeframe
+    '''
 
     dfs = get_tickers()
 
@@ -256,7 +266,8 @@ def correlations(start, end):
             if start is None and end is None:
                 data = dfs[ticker]
             else:
-                data = fetch_stock_data_set_dates(ticker, start, end)
+                data = stock_data.fetch_stock_data_set_dates(
+                    ticker, start, end)
 
             changes = []
 
@@ -282,15 +293,11 @@ def correlations(start, end):
 
         try:
             df = pd.DataFrame(data_dictionary)
-            print(f"DataFrame created with shape: {df.shape}")
-            print(f"Columns: {list(df.columns)}")
 
         except Exception as e:
-            print(f"Error creating DataFrame with direct method: {e}")
 
             # Fallback if lengths do not allign
             max_length = max(len(v) for v in data_dictionary.values())
-            print(f"Max length found: {max_length}")
 
             padded_dict = {}
 
@@ -300,7 +307,6 @@ def correlations(start, end):
                 if current_length < max_length:
 
                     # fill with nAn
-
                     padded_changes = changes + \
                         [np.nan] * (max_length - current_length)
                     padded_dict[ticker] = padded_changes
@@ -309,7 +315,6 @@ def correlations(start, end):
                     padded_dict[ticker] = changes
 
             df = pd.DataFrame(padded_dict)
-            print(f"DataFrame created with padding, shape: {df.shape}")
 
     df_correlation = df.corr()
 
